@@ -1,20 +1,20 @@
 import {StyleSheet} from "react-native";
+import { horizontalScale, scaleFontSize, verticalScale } from '../../assets/styles/scaling';
 
 
 export default styles = StyleSheet.create({
   TopContainer: {
       flexDirection: 'row',
-      marginTop: 10,
-      margin: 10,
-      gap: 10,
+      margin: verticalScale(10),
+      gap: horizontalScale(10),
       justifyContent: 'space-between',
     },
     avatorBox: {
       flexDirection: 'row',
-       gap: 15
+       gap: horizontalScale(15)
     },
     secWrapper: {
-      marginHorizontal: 40,
+      marginHorizontal: horizontalScale(30),
       height: 100,
     },
     avator: {
@@ -29,23 +29,23 @@ export default styles = StyleSheet.create({
       // shadowOpacity: 0.2,
       // shadowRadius: 3,
       backgroundColor: '#ffffff',
-      borderRadius: 100,
-      paddingTop: 5,
+      borderRadius: horizontalScale(100),
+      paddingTop: verticalScale(5),
       elevation: 40,
       overflow: 'hidden',
     },
     clockWrapper: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      marginHorizontal: 35,
-      marginTop: 35,
+      marginHorizontal: horizontalScale(35),
+      marginTop: verticalScale(35),
     },
     clockText: {
-      fontSize: 18,
+      fontSize: scaleFontSize(18),
       color: '#fff',
       marginTop: 10,
       color: '#fda1ba',
-      paddingBottom: 5,
+      paddingBottom: verticalScale(5),
       borderBottomWidth: 2,
       borderBottomColor: '#fda1ba',
     },
@@ -53,21 +53,21 @@ export default styles = StyleSheet.create({
       flexDirection: 'row',
       flexWrap: 'wrap',
       justifyContent: 'space-between',
-      gap: 18,
-      marginTop: 50,
+      gap: horizontalScale(15),
+      marginTop: verticalScale(40),
     },
     box: {
       backgroundColor: '#fff',
       width: '47%',
       alignItems: 'center',
-      padding: 18,
+      padding: horizontalScale(18),
       borderRadius: 10,
       elevation: 10,
     },
     boxImg: {
       width: 50,
       height: 50,
-      marginBottom: 10,
+      marginBottom: verticalScale(10),
     },
   });
 
