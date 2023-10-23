@@ -9,7 +9,6 @@ import {
   TextInput,
   ScrollView,
 } from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
 import {useDispatch} from 'react-redux';
 import {loginUserInfo, resetUser} from '../../redux/reducers/User';
 import {LoginUser} from '../../api';
@@ -83,10 +82,8 @@ const Login = ({navigation}) => {
                       dispatch(loginUserInfo(data.userinfo.data));
 
                       navigation.navigate('home');
+                      // console.log("here")
                     }
-
-                    // dispatch(resetUser());
-                    // navigation.navigate('home');
                   }}
                 />
               </View>

@@ -1,22 +1,22 @@
 import React, {useState, useEffect} from 'react';
 import {
   View,
-  Image,
   Text,
-  StyleSheet,
   SafeAreaView,
-  Alert,
-  TouchableOpacity,
   PermissionsAndroid,
 } from 'react-native';
-import MapboxGL from '@rnmapbox/maps';
-import Geolocation from '@react-native-community/geolocation';
 import {launchCamera} from 'react-native-image-picker';
-import ClockText from './ClockText';
+import Geolocation from '@react-native-community/geolocation';
+import ClockText from './components/ClockText';
+import {useSelector, useDispatch} from 'react-redux';
+import {checkInStatus,checkOutStatus} from '../../redux/reducers/CheckInOutStatus';
+import {checkInOutApi} from '../../api';
 
-MapboxGL.setAccessToken(
-  'sk.eyJ1IjoiYXVuZ3RodTIiLCJhIjoiY2xuaWN2NXVpMW5kZzJrbWphcXlhbmxjcCJ9.X15nsu4Vl-WbEFRhoNBa0g',
-);
+import CustomModal from '../../components/CustomModel';
+import MapView from './components/MapView';
+import CheckInOutBtn from './components/CheckInOutBtn';
+import styles from './styles';
+
 
 const requestLocationPermission = async () => {
   try {
@@ -43,8 +43,17 @@ const requestLocationPermission = async () => {
   }
 };
 
-const CheckInOut = () => {
+
+const CheckInOut = ({navigation}) => {
+
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [message, setMessage] = useState('');
   const [latLong, setLatLong] = useState([]);
+  const {access_token, user_info} = useSelector(state => state.user);
+  const {CheckIn} = useSelector(state => state.checkinout);
+
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const result = requestLocationPermission();
@@ -64,7 +73,60 @@ const CheckInOut = () => {
         );
       }
     });
-  }, []);
+
+    setTimeout(() => {
+      setModalVisible(false);
+    }, 3000);
+  }, [isModalVisible]);
+
+  const options = {
+    saveToPhotos: false,
+    mediaType: 'Photo',
+    maxHeight: 800,
+    maxWidth: 600,
+  };
+
+  const callCamera = async () => {
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.CAMERA,
+    );
+    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+      launchCamera(options, response => {
+        // console.log('Response = ', response);
+        if (response.didCancel) {
+          // console.log('User cancelled image picker');
+        } else {
+          // console.log('response', JSON.stringify(response));
+          callCheckInOut(response.assets[0]);
+        }
+      });
+    }
+  };
+
+  const callCheckInOut = async imgUri => {
+    response = await checkInOutApi(
+      imgUri,
+      latLong,
+      access_token,
+      user_info.userId,
+      CheckIn.status
+    );
+    if (response.status) {
+      if(CheckIn.status){
+        dispatch(checkOutStatus({time:response.time,status:true}));
+      }else {
+        dispatch(checkInStatus({time:response.time,status:true})); 
+      }
+
+      navigation.navigate('home', {
+        showModal: response.status,
+        message: response.message,
+      });
+    } else {
+      setMessage(response.message);
+      setModalVisible(true);
+    }
+  };
 
   const getDeviceLocation = () => {
     Geolocation.requestAuthorization(
@@ -83,108 +145,23 @@ const CheckInOut = () => {
     );
   };
 
-  const createGeoJSONCircle = function (center, radiusInKm, points) {
-    if (!points) points = 64;
-
-    var coords = {
-      latitude: center[1],
-      longitude: center[0],
-    };
-
-    var km = radiusInKm;
-
-    var ret = [];
-    var distanceX = km / (111.32 * Math.cos((coords.latitude * Math.PI) / 180));
-    var distanceY = km / 110.574;
-
-    var theta, x, y;
-    for (var i = 0; i < points; i++) {
-      theta = (i / points) * (2 * Math.PI);
-      x = distanceX * Math.cos(theta);
-      y = distanceY * Math.sin(theta);
-
-      ret.push([coords.longitude + x, coords.latitude + y]);
-    }
-    ret.push(ret[0]);
-
-    return [ret];
-  };
-
-  const shape = {
-    type: 'FeatureCollection',
-    features: [
-      {
-        type: 'Feature',
-        properties: {},
-        geometry: {
-          type: 'Polygon',
-          coordinates: createGeoJSONCircle([96.129173, 16.8161807], 0.1),
-        },
-      },
-    ],
-  };
-
-  const MapView = () => {
-    return (
-      <MapboxGL.MapView
-        style={styles.map}
-        onPress={() => getDeviceLocation()}
-        // scrollEnabled={false}
-        scaleBarEnabled={false}
-        attributionEnabled={false}
-        logoEnabled={false}>
-        <MapboxGL.ShapeSource id="line1" shape={shape}>
-          <MapboxGL.FillLayer
-            id="sf2010CircleFill"
-            sourceLayerID="sf2010"
-            style={styles.circle}
-          />
-        </MapboxGL.ShapeSource>
-
-        {latLong.length > 0 && (
-          <View>
-            <MapboxGL.Camera
-              centerCoordinate={latLong}
-              zoomLevel={15}
-              animationMode="flyTo"
-              animationDuration={2000}
-              UserTrackingMode={true}
-            />
-            <MapboxGL.UserLocation showsUserHeadingIndicator={true} />
-          </View>
-        )}
-      </MapboxGL.MapView>
-    );
-  };
-
-  const options = {
-    saveToPhotos: false,
-    mediaType: 'Photo',
-  };
-
-  const callCamera = async () => {
-    const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.CAMERA,
-    );
-    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-      launchCamera(options, response => {
-        console.log('Response = ', response);
-        if (response.didCancel) {
-          console.log('User cancelled image picker');
-        } else {
-          console.log('response', JSON.stringify(response));
-        }
-      });
-    }
-  };
-
   return (
     <SafeAreaView>
+      <View>
+        <CustomModal
+          title={message}
+          isVisible={isModalVisible}
+          jsonPath={require('../../assets/animations/error-check-mark.json')}
+        />
+      </View>
       <View style={styles.container}>
-        <MapView />
+        <MapView
+          latLong={latLong}
+          getDeviceLocation={getDeviceLocation}
+        />
         <View style={styles.secWrapper}>
           <View>
-            <Text style={styles.checkIntext}>Check In Time</Text>
+            <Text style={styles.checkIntext}>Check {CheckIn.status ? "out" : "in"} Time</Text>
           </View>
           <View style={{marginVertical: 13}}>
             <ClockText />
@@ -195,14 +172,8 @@ const CheckInOut = () => {
           <View style={{marginTop: 10}}>
             <Text style={styles.shiftText}>Front Office Shift-A</Text>
           </View>
-          <TouchableOpacity activeOpacity={0.7} onPress={() => callCamera()}>
-            <View style={styles.btnWrapper}>
-              <Image
-                source={require('../../assets/images/cursor.png')}
-                style={styles.checkInOutBtn}
-              />
-            </View>
-          </TouchableOpacity>
+
+          <CheckInOutBtn callCamera={callCamera} CheckIn={CheckIn}/>
 
           <View>
             <Text style={styles.shiftText}>Open gps to check in/out</Text>
@@ -215,54 +186,4 @@ const CheckInOut = () => {
 
 export default CheckInOut;
 
-const brownColor = '#797a7c';
 
-const styles = StyleSheet.create({
-  container: {
-    height: '100%',
-  },
-  map: {
-    flex: 1,
-  },
-  circle: {
-    fillColor: '#FF0000',
-    fillOutlineColor: '#FF0000',
-    fillOpacity: 0.6,
-  },
-  secWrapper: {
-    flex: 1.3,
-    alignItems: 'center',
-    marginVertical: 25,
-  },
-  checkIntext: {
-    color: '#4CAF50',
-    fontSize: 19,
-  },
-  clockText: {
-    fontSize: 40,
-    color: brownColor,
-    fontWeight: 'bold',
-  },
-  dateText: {
-    fontSize: 25,
-    color: brownColor,
-  },
-  shiftText: {
-    fontSize: 16,
-    color: brownColor,
-  },
-  btnWrapper: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 140,
-    height: 140,
-    borderRadius: 100,
-    backgroundColor: '#aed581',
-    marginVertical: 15,
-  },
-  checkInOutBtn: {
-    width: 70,
-    height: 70,
-    resizeMode: 'contain',
-  },
-});

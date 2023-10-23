@@ -5,17 +5,13 @@ import { horizontalScale, scaleFontSize, verticalScale } from '../../assets/styl
 export default styles = StyleSheet.create({
   TopContainer: {
       flexDirection: 'row',
-      margin: verticalScale(10),
+      margin: verticalScale(15),
       gap: horizontalScale(10),
       justifyContent: 'space-between',
     },
     avatorBox: {
       flexDirection: 'row',
-       gap: horizontalScale(15)
-    },
-    secWrapper: {
-      marginHorizontal: horizontalScale(30),
-      height: 100,
+       gap: horizontalScale(10)
     },
     avator: {
       width: 100,
@@ -34,27 +30,19 @@ export default styles = StyleSheet.create({
       elevation: 40,
       overflow: 'hidden',
     },
-    clockWrapper: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      marginHorizontal: horizontalScale(35),
-      marginTop: verticalScale(35),
+    secWrapper: {
+      marginHorizontal: horizontalScale(30),
     },
-    clockText: {
-      fontSize: scaleFontSize(18),
-      color: '#fff',
-      marginTop: 10,
-      color: '#fda1ba',
-      paddingBottom: verticalScale(5),
-      borderBottomWidth: 2,
-      borderBottomColor: '#fda1ba',
+    dateBox:{
+      marginBottom:verticalScale(20)
     },
     boxWrapper: {
       flexDirection: 'row',
       flexWrap: 'wrap',
       justifyContent: 'space-between',
       gap: horizontalScale(15),
-      marginTop: verticalScale(40),
+      marginTop: verticalScale(35),
+      paddingBottom:verticalScale(20),
     },
     box: {
       backgroundColor: '#fff',
