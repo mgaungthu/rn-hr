@@ -1,10 +1,8 @@
 import axios from 'axios';
 import {readFile} from 'react-native-fs';
 
-
 // const API_URL = 'http://10.10.8.231/hrms/public/api/';
-const API_URL = 'http://10.10.8.20/hrms/public/api/';
-
+const API_URL = 'http://10.10.8.25/hrms/public/api/';
 
 export const LoginUser = async data => {
   try {
@@ -29,14 +27,14 @@ const loadImageBase64 = async capturedImageURI => {
   }
 };
 
-
-
-export const checkInOutApi = async (imgUri, latLong, access_token, id,checkInStatus) => {
-
-
-
+export const checkInOutApi = async (
+  imgUri,
+  latLong,
+  access_token,
+  id,
+  checkInStatus,
+) => {
   try {
-
     const d = new Date();
     const m = d.getMinutes();
     const h = d.getHours() >= 12 ? d.getHours() - 12 : d.getHours();
@@ -57,8 +55,12 @@ export const checkInOutApi = async (imgUri, latLong, access_token, id,checkInSta
       employee_id: id,
       type: checkInStatus ? 'check-out' : 'check-in',
       date: curDate, //    time = today.getHours() + ':' + today.getMinutes() + ':' + today.getSeconds();
-      checkIntime: checkInStatus ? '-' : ('0' + h).substr(-2) + ':' + ('0' + m).substr(-2) + ampm,
-      checkOuttime: !checkInStatus ? '-' : ('0' + h).substr(-2) + ':' + ('0' + m).substr(-2) + ampm,
+      checkIntime: checkInStatus
+        ? '-'
+        : ('0' + h).substr(-2) + ':' + ('0' + m).substr(-2) + ampm,
+      checkOuttime: !checkInStatus
+        ? '-'
+        : ('0' + h).substr(-2) + ':' + ('0' + m).substr(-2) + ampm,
       in_image: base64Image,
       latitude: latLong[1],
       longitude: latLong[0],
@@ -68,20 +70,20 @@ export const checkInOutApi = async (imgUri, latLong, access_token, id,checkInSta
     // console.log(datalist);
 
     const config = {
-      timeout:3000,
+      timeout: 3000,
       headers: {
         Accept: 'application/json',
         Authorization: 'Bearer  ' + access_token,
         'Content-Type': 'multipart/form-data',
       },
-    }
+    };
 
-    response = await axios.post(API_URL + 'user/attendance', datalist,config);
+    response = await axios.post(API_URL + 'user/attendance', datalist, config);
 
     return {
       status: true,
       message: response.data.message,
-      time:checkInStatus ? datalist.checkOuttime : datalist.checkIntime
+      time: checkInStatus ? datalist.checkOuttime : datalist.checkIntime,
     };
   } catch (error) {
     // console.log(error.response.data.message);
@@ -93,14 +95,15 @@ export const checkInOutApi = async (imgUri, latLong, access_token, id,checkInSta
 };
 
 export const callCheckInOutInfo = async access_token => {
-
   // console.log(access_token)
 
-  const config = { Authorization: "Bearer " + access_token }
+  const config = {Authorization: 'Bearer ' + access_token};
 
   try {
-    response = await axios.get(API_URL + 'user/get_checkinout_info',{headers: config})
-    
+    response = await axios.get(API_URL + 'user/get_checkinout_info', {
+      headers: config,
+    });
+
     // console.log( response.data.todayOfficeShift);
     return {
       status: true,
@@ -114,32 +117,66 @@ export const callCheckInOutInfo = async access_token => {
   }
 };
 
-export const callAttendanceRequestList = async (access_token) => {
+export const callAttendanceRequestList = async access_token => {
+  const config = {Authorization: 'Bearer ' + access_token};
 
-  const config = { Authorization: "Bearer " + access_token }
-
-  try {   
-    response = await axios.get(API_URL + 'user/attendance_request_list',{headers: config})  
+  try {
+    response = await axios.get(API_URL + 'user/attendance_request_list', {
+      headers: config,
+    });
     const trasmformed = transformArray(response.data.attendanceRequestlists);
 
     return {
       status: true,
       data: trasmformed,
     };
-
   } catch (error) {
     return {
       status: false,
       data: null,
     };
   }
-}
+};
 
 function transformArray(originalArray) {
   return originalArray.map(item => ({
     id: item.id,
     status: item.statusby_manager,
     title: item.attendance_type.attendance_type_name,
-    date: item.from_date
+    date: item.from_date,
   }));
 }
+
+export const submitAttendanceRequest = async (formData,access_token, id) => {
+
+  const config = {
+    timeout: 3000,
+    headers: {
+      Accept: 'application/json',
+      Authorization: 'Bearer  ' + access_token,
+    },
+  };
+
+  const data = {
+    employee_id: id,
+    shift_id: formData.officeShift, // You can replace this with your actual value
+    attendance_type_id: formData.checkedItems, // You can replace this with your actual value
+    date: formData.formattedDate, // You can replace this with your actual value
+    reason:formData.reason,
+    approvedby_manager: 0,
+    approvedby_hr: 0,
+  };
+
+  console.log(data);
+
+  try {
+
+    response = await axios.post(API_URL + 'user/attendance_request', data, config);
+
+    console.log(response);
+    
+  } catch (error) {
+    console.log(error.response.data.message);
+  }
+
+};

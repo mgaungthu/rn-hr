@@ -5,8 +5,6 @@ import LottieView from 'lottie-react-native';
 const CustomModal = ({title, jsonPath, isVisible}) => {
 
 
-  
-  console.log(isVisible+" modal")
   return (
     <View style={styles.modalContainer}>
       <Modal animationType="fade" transparent={true} visible={isVisible}>

@@ -14,7 +14,7 @@ const AtdRequest = () => {
 
   useEffect(() => {
     callAttendanceRequestList();
-  }, []);
+  },[]);
 
   const callAttendanceRequestList = async () => {
     const response = await callatdReq(access_token);
