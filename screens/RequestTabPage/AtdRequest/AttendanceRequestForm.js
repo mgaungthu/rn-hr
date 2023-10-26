@@ -1,8 +1,7 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   Pressable,
   TouchableOpacity,
   Platform,
@@ -14,23 +13,132 @@ import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import {faXmark, faPaperPlane} from '@fortawesome/free-solid-svg-icons';
 import RNDateTimePicker from '@react-native-community/datetimepicker';
 import {Dropdown} from 'react-native-element-dropdown';
-import {
-  horizontalScale,
-  scaleFontSize,
-  verticalScale,
-} from '../../../assets/styles/scaling';
-import {submitAttendanceRequest} from '../../../api';
+import {callAttendanceRequestList, submitAttendanceRequest} from '../../../api';
 import {useSelector} from 'react-redux';
 import LoadingScreen from '../../../components/LoadingScreen';
+import CustomModal from '../../../components/CustomModel';
+import styles from './style';
+import {
+    horizontalScale,
+    verticalScale,
+  } from '../../../assets/styles/scaling';
+import ActionButton from './ActionButton';
 
-const AttendanceRequestForm = ({navigation}) => {
+const month = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
+
+const data = [
+  {value: '1', label: 'Office Shift'},
+  {value: '2', label: 'Front Office Shift-A'},
+  {value: '3', label: 'Duty Off'},
+  {value: '4', label: 'ADS Office Shift'},
+  {value: '5', label: 'ADS Production Shift'},
+  {value: '6', label: 'ADS S&D Shift'},
+  {value: '7', label: 'ADS S&D (Shwe Bo & Wetlet) Shift'},
+  {value: '8', label: 'ADS Driver Shift'},
+  {value: '9', label: 'ADS O&M Shift'},
+  {value: '10', label: 'ADS S&D (KISG) Shift'},
+];
+
+const checkBoxData = [
+  {id: 1, Label: 'In Time', isChecked: false},
+  {id: 2, Label: 'Out Time', isChecked: false},
+  {id: 3, Label: 'Ferry Late', isChecked: false},
+  {id: 4, Label: 'On Duty', isChecked: false},
+  {id: 5, Label: 'Travel', isChecked: false},
+  {id: 6, Label: 'Off Day', isChecked: false},
+  {id: 7, Label: 'Work From Home', isChecked: false},
+];
+
+const AttendanceRequestForm = ({route, navigation}) => {
   const [isPickerShow, setIsPickerShow] = useState(false);
   const [date, setDate] = useState(new Date(Date.now()));
   const [checkedItem, setCheckedItem] = useState(null);
   const [reason, setReason] = useState('');
   const [selectedOfficeShift, setSelectedOfficeShift] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [message, setMessage] = useState('');
+  const [editParams, setEditParams] = useState({
+    isEdit: false,
+    editId: null,
+  });
+
   const {access_token, user_info} = useSelector(state => state.user);
+
+  useEffect(() => {
+    closeModal();
+    if (route.params?.isEdit) {
+      const id = route.params?.id;
+      setLoading(true);
+      attendaneRequestCall(id);
+      setEditParams({
+        isEdit: true,
+        editId: id,
+      });
+    }
+
+    // console.log();
+
+    return () => {
+      closeModal();
+    };
+  }, [isModalVisible]);
+
+  const attendaneRequestCall = id => {
+    callAttendanceRequestList(access_token, id)
+      .then(response => {
+        // console.log(response.data)
+        const {date, reason, status, attendance_type_id} = response.data;
+        const inputDate = date;
+        const outputDate = convertDateFormat(inputDate);
+        setDate(new Date(outputDate));
+        setSelectedOfficeShift(1);
+        setReason(reason);
+        // console.log(data)
+        setCheckedItem(attendance_type_id);
+      })
+      .catch(error => {
+        alert(error);
+      })
+      .finally(() => setLoading(false));
+  };
+
+  const convertDateFormat = inputDate => {
+    const dateComponents = inputDate.split('/');
+    const originalDate = new Date(
+      dateComponents[2],
+      dateComponents[0] - 1,
+      dateComponents[1],
+    );
+
+    const year = originalDate.getFullYear();
+    const month = (originalDate.getMonth() + 1).toString().padStart(2, '0');
+    const day = originalDate.getDate().toString().padStart(2, '0');
+
+    const formattedDate = `${year}-${month}-${day}`;
+
+    return formattedDate;
+  };
+
+  const closeModal = () => {
+    setTimeout(() => {
+      setModalVisible(false);
+      setMessage('');
+    }, 1000);
+  };
 
   const showPicker = () => {
     setIsPickerShow(true);
@@ -43,52 +151,15 @@ const AttendanceRequestForm = ({navigation}) => {
     }
   };
 
-  const month = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-
-  const data = [
-    {value: '1', label: 'Office Shift'},
-    {value: '2', label: 'Front Office Shift-A'},
-    {value: '3', label: 'Duty Off'},
-    {value: '4', label: 'ADS Office Shift'},
-    {value: '5', label: 'ADS Production Shift'},
-    {value: '6', label: 'ADS S&D Shift'},
-    {value: '7', label: 'ADS S&D (Shwe Bo & Wetlet) Shift'},
-    {value: '8', label: 'ADS Driver Shift'},
-    {value: '9', label: 'ADS O&M Shift'},
-    {value: '10', label: 'ADS S&D (KISG) Shift'},
-  ];
-
-  const checkBoxData = [
-    {id: 1, Label: 'In Time', isChecked: false},
-    {id: 2, Label: 'Out Time', isChecked: false},
-    {id: 3, Label: 'Ferry Late', isChecked: false},
-    {id: 4, Label: 'On Duty', isChecked: false},
-    {id: 5, Label: 'Travel', isChecked: false},
-    {id: 6, Label: 'Off Day', isChecked: false},
-    {id: 7, Label: 'Work From Home', isChecked: false},
-  ];
-
   const handleCheckboxChange = id => {
-    console.log(id);
+
     setCheckedItem(id === checkedItem ? null : id);
   };
 
   const handleFormSubmit = () => {
     if (!date || !selectedOfficeShift || !checkedItem || !reason) {
-      alert('Please fill out all required fields');
+      setModalVisible(true);
+      setMessage('Please fill out all required fields');
       return;
     }
 
@@ -103,19 +174,30 @@ const AttendanceRequestForm = ({navigation}) => {
     const formData = {
       formattedDate,
       officeShift:
-        data.find(item => item.value === selectedOfficeShift)?.value || '',
+        data.find(item => item.value === selectedOfficeShift)?.value ||
+        selectedOfficeShift ||
+        '',
       checkedItems: checked[0].id,
       reason,
     };
 
     setLoading(true);
 
-    submitAttendanceRequest(formData, access_token, user_info.userId).then(
-      success => {
+    submitAttendanceRequest(
+      formData,
+      access_token,
+      user_info.userId,
+      editParams,
+    )
+      .then(() => {
         setLoading(false);
-        navigation.navigate('atd-req', { formSubmitted: true });
-      },
-    );
+        navigation.navigate('atd-req', {showModal: true});
+      })
+      .catch(() => {
+        setLoading(false);
+        setModalVisible(true);
+        setMessage('Internet Connection Error');
+      });
 
     // Now you can use formData to submit or perform any other actions
     // console.log('Form submitted with data:', formData);
@@ -125,6 +207,11 @@ const AttendanceRequestForm = ({navigation}) => {
     <ScrollView contentContainerStyle={styles.scrollViewContainer}>
       <View style={styles.container}>
         <View style={styles.topRow}>
+          <CustomModal
+            title={message}
+            isVisible={isModalVisible}
+            jsonPath={require('../../../assets/animations/error-check-mark.json')}
+          />
           <View style={styles.titleBox}>
             <Pressable onPress={() => navigation.goBack()}>
               <FontAwesomeIcon
@@ -145,7 +232,7 @@ const AttendanceRequestForm = ({navigation}) => {
             </TouchableOpacity>
           </View>
         </View>
-        <View style={{marginTop: verticalScale(15)}}>
+        <View>
           <Text style={styles.labelText}>Date</Text>
           <TouchableOpacity onPress={showPicker} style={styles.dateBtn}>
             <Text style={styles.dateText}>{month[date.getMonth()]}</Text>
@@ -168,7 +255,9 @@ const AttendanceRequestForm = ({navigation}) => {
             maxHeight={verticalScale(300)}
             labelField="label"
             valueField="value"
-            placeholder="Choose your Office Shift"
+            placeholder={
+              data[selectedOfficeShift]?.label || 'Choose your Office Shift'
+            }
             searchPlaceholder="Search..."
             value={selectedOfficeShift}
             onChange={item => {
@@ -203,8 +292,8 @@ const AttendanceRequestForm = ({navigation}) => {
         </View>
 
         <View>
-          <Text style={[styles.labelText, {marginTop: verticalScale(10)}]}>
-            Attendance Type
+          <Text style={[styles.labelText]}>
+            Reason
           </Text>
           <TextInput
             style={styles.input}
@@ -213,6 +302,8 @@ const AttendanceRequestForm = ({navigation}) => {
             value={reason}
             onChangeText={text => setReason(text)}
           />
+
+          <ActionButton user_info={user_info} editParams={editParams}/>
         </View>
 
         {isPickerShow && (
@@ -234,90 +325,3 @@ const AttendanceRequestForm = ({navigation}) => {
 
 export default AttendanceRequestForm;
 
-const styles = StyleSheet.create({
-  scrollViewContainer: {
-    flexGrow: 1,
-  },
-  container: {
-    flex: 1,
-    padding: horizontalScale(18),
-    borderTopColor: '#206aed',
-    borderTopWidth: verticalScale(10),
-    backgroundColor: '#fff',
-  },
-  topRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  titleBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: horizontalScale(10),
-  },
-  title: {
-    color: '#000',
-    fontSize: scaleFontSize(20),
-    fontWeight: '500',
-  },
-  icon: {
-    color: '#206aed',
-    marginTop: verticalScale(2),
-  },
-  dateBtn: {
-    width: horizontalScale(100),
-    backgroundColor: '#eff4f2',
-    paddingVertical: verticalScale(25),
-    borderColor: '#b7bcc5',
-    borderWidth: verticalScale(1),
-    borderRadius: horizontalScale(8),
-    marginTop: verticalScale(10),
-  },
-  dateText: {
-    color: '#000',
-    textAlign: 'center',
-    fontSize: scaleFontSize(18),
-  },
-  labelText: {
-    color: '#9e9e9e',
-    fontSize: scaleFontSize(16),
-    marginTop: verticalScale(20),
-  },
-  dropdown: {
-    height: verticalScale(50),
-    borderBottomColor: 'gray',
-    borderBottomWidth: verticalScale(0.5),
-  },
-  placeholderStyle: {
-    fontSize: scaleFontSize(16),
-    color: '#000',
-  },
-  selectedTextStyle: {
-    fontSize: scaleFontSize(16),
-    color: '#000',
-  },
-  checkBoxWrapper: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: verticalScale(15),
-  },
-  checkboxContainer: {
-    flexDirection: 'row',
-    marginBottom: verticalScale(15),
-    width: '50%',
-  },
-  checkbox: {
-    alignSelf: 'center',
-  },
-  label: {
-    color: '#000',
-    margin: horizontalScale(8),
-  },
-  input: {
-    color: '#000',
-    borderBottomWidth: verticalScale(1),
-    borderBottomColor: '#9e9e9e',
-    fontSize: scaleFontSize(16),
-    marginTop: verticalScale(8),
-  },
-});

@@ -16,6 +16,7 @@ import CustomModal from '../../components/CustomModel';
 import MapView from './components/MapView';
 import CheckInOutBtn from './components/CheckInOutBtn';
 import styles from './styles';
+import LoadingScreen from '../../components/LoadingScreen';
 
 
 const requestLocationPermission = async () => {
@@ -49,6 +50,7 @@ const CheckInOut = ({navigation}) => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [message, setMessage] = useState('');
   const [latLong, setLatLong] = useState([]);
+  const [loading, setLoading] = useState(false);
   const {access_token, user_info} = useSelector(state => state.user);
   const {CheckIn} = useSelector(state => state.checkinout);
 
@@ -96,6 +98,7 @@ const CheckInOut = ({navigation}) => {
         if (response.didCancel) {
           // console.log('User cancelled image picker');
         } else {
+          setLoading(true);
           // console.log('response', JSON.stringify(response));
           callCheckInOut(response.assets[0]);
         }
@@ -104,28 +107,40 @@ const CheckInOut = ({navigation}) => {
   };
 
   const callCheckInOut = async imgUri => {
-    response = await checkInOutApi(
-      imgUri,
-      latLong,
-      access_token,
-      user_info.userId,
-      CheckIn.status
-    );
-    if (response.status) {
-      if(CheckIn.status){
-        dispatch(checkOutStatus({time:response.time,status:true}));
-      }else {
-        dispatch(checkInStatus({time:response.time,status:true})); 
-      }
 
-      navigation.navigate('home', {
-        showModal: response.status,
-        message: response.message,
-      });
-    } else {
-      setMessage(response.message);
-      setModalVisible(true);
+    try {
+      response = await checkInOutApi(
+        imgUri,
+        latLong,
+        access_token,
+        user_info.userId,
+        CheckIn.status
+      );
+      if (response.status) {
+        if(CheckIn.status){
+          dispatch(checkOutStatus({time:response.time,status:true}));
+        }else {
+          
+          dispatch(checkInStatus({time:response.time,status:true})); 
+        }
+        setLoading(false);
+  
+        navigation.navigate('home', {
+          showModal: response.status,
+          message: response.message,
+        });
+      } else {
+        setLoading(false);
+        setMessage(response.message);
+        setModalVisible(true);
+      }
+    } catch (error) {
+         setLoading(false);
+        setMessage("Internet Connection Error");
+        setModalVisible(true);
     }
+
+   
   };
 
   const getDeviceLocation = () => {
@@ -155,6 +170,7 @@ const CheckInOut = ({navigation}) => {
         />
       </View>
       <View style={styles.container}>
+      {loading && <LoadingScreen />}
         <MapView
           latLong={latLong}
           getDeviceLocation={getDeviceLocation}

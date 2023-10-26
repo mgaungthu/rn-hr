@@ -70,20 +70,25 @@ const Login = ({navigation}) => {
               <View style={{marginTop: 20, alignItems: 'center'}}>
                 <Button
                   onPress={async () => {
-                    const {status, message, data} = await LoginUser({
-                      employee_id: userId,
-                      password: password,
-                    });
-                    if (!status) {
-                      setError(message);
-                      dispatch(resetUser());
-                    } else {
-                      // console.log(data.userinfo.data.user_info+ " , " +data.userinfo.data.access_token);
-                      dispatch(loginUserInfo(data.userinfo.data));
-
-                      navigation.navigate('home');
-                      // console.log("here")
+                    try {
+                      const {status, message, data} = await LoginUser({
+                        employee_id: userId,
+                        password: password,
+                      });
+                      if (!status) {
+                        setError(message);
+                        dispatch(resetUser());
+                      } else {
+                        // console.log(data.userinfo.data.user_info+ " , " +data.userinfo.data.access_token);
+                        dispatch(loginUserInfo(data.userinfo.data));
+  
+                        navigation.navigate('home');
+                        // console.log("here")
+                      }
+                    } catch (error) {
+                      alert("Internet Connection Error")
                     }
+                    
                   }}
                 />
               </View>

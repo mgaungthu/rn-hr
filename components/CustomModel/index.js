@@ -1,6 +1,7 @@
 import React from 'react';
 import {Modal, StyleSheet, Text, View} from 'react-native';
 import LottieView from 'lottie-react-native';
+import { horizontalScale, scaleFontSize, verticalScale } from '../../assets/styles/scaling';
 
 const CustomModal = ({title, jsonPath, isVisible}) => {
 
@@ -32,20 +33,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems:"center",
     justifyContent:'flex-start',
-    top: 100,
+    top: verticalScale(100),
     width: '85%',
     height: 50,
     backgroundColor: 'black',
     borderRadius: 8,
   },
   animationContainer:{
-   paddingLeft:10
+   paddingLeft: horizontalScale(10)
   },    
   textStyle: {
     color: 'white',
     textAlign: 'center',
-    fontSize: 16,
-    marginLeft: 20,
+    fontSize: scaleFontSize(16),
+    marginLeft: horizontalScale(20),
   },
 });
 

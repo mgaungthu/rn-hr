@@ -2,7 +2,7 @@ import axios from 'axios';
 import {readFile} from 'react-native-fs';
 
 // const API_URL = 'http://10.10.8.231/hrms/public/api/';
-const API_URL = 'http://10.10.8.25/hrms/public/api/';
+const API_URL = 'http://10.10.8.33/hrms/public/api/';
 
 export const LoginUser = async data => {
   try {
@@ -87,9 +87,10 @@ export const checkInOutApi = async (
     };
   } catch (error) {
     // console.log(error.response.data.message);
+    
     return {
       status: false,
-      message: error.response.data.message,
+      message: error.response.data.message || error, 
     };
   }
 };
@@ -110,6 +111,7 @@ export const callCheckInOutInfo = async access_token => {
       data: response.data.todayOfficeShift,
     };
   } catch (error) {
+    alert(error);
     return {
       status: false,
       data: null,
@@ -117,18 +119,37 @@ export const callCheckInOutInfo = async access_token => {
   }
 };
 
-export const callAttendanceRequestList = async access_token => {
+
+
+export const callAttendanceRequestList = async (access_token,id =null) => {
+
+ 
   const config = {Authorization: 'Bearer ' + access_token};
 
+  let response;
+  let trasnformed;
+ 
   try {
-    response = await axios.get(API_URL + 'user/attendance_request_list', {
-      headers: config,
-    });
-    const trasmformed = transformArray(response.data.attendanceRequestlists);
+    if(!id){
+      
+     
+      response = await axios.get(API_URL + 'user/attendance_request_list',{
+        headers: config,
+      });
+     
+      trasnformed = transformArray(response.data.attendanceRequestlists); 
+    } else {
+     
+      response = await axios.get(API_URL + 'user/attendance_request_list?edit_attendance_request_id='+id,{
+        headers: config,
+      });
+     
+       trasnformed = transformArray(response.data.attendanceRequest); 
+    }
 
     return {
       status: true,
-      data: trasmformed,
+      data: trasnformed,
     };
   } catch (error) {
     return {
@@ -139,15 +160,29 @@ export const callAttendanceRequestList = async access_token => {
 };
 
 function transformArray(originalArray) {
-  return originalArray.map(item => ({
-    id: item.id,
-    status: item.statusby_manager,
-    title: item.attendance_type.attendance_type_name,
-    date: item.from_date,
-  }));
+  if(originalArray.length > 0 ) {
+    return originalArray.map(item => ({
+      id: item.id,
+      status: item.statusby_manager,
+      title: item.attendance_type.attendance_type_name,
+      date: item.from_date,
+      statusby_manager:item.statusby_manager
+    }));
+  }
+    const item = originalArray;
+    return {
+      id: item.id,
+      status: item.statusby_manager,
+      attendance_type_id: item.attendance_type_id,
+      date: item.from_date,
+      reason:item.reason,
+      statusby_manager:item.statusby_manager
+    }
+  
+  
 }
 
-export const submitAttendanceRequest = async (formData,access_token, id) => {
+export const submitAttendanceRequest = async (formData,access_token, id,editParams) => {
 
   const config = {
     timeout: 3000,
@@ -165,9 +200,10 @@ export const submitAttendanceRequest = async (formData,access_token, id) => {
     reason:formData.reason,
     approvedby_manager: 0,
     approvedby_hr: 0,
+    isEdit:editParams.isEdit,
+    attendance_id:editParams.editId
   };
 
-  console.log(data);
 
   try {
 
