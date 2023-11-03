@@ -9,6 +9,7 @@ import AtdRequest from '../screens/RequestTabPage/AtdRequest';
 import LeaveRequest from '../screens/RequestTabPage/LeaveRequest';
 import OtRequest from '../screens/RequestTabPage/OtRequest';
 import AttendanceRequestForm from '../screens/RequestTabPage/AtdRequest/AttendanceRequestForm';
+import LeaveRequestForm from '../screens/RequestTabPage/LeaveRequest/LeaveRequestForm';
 
 
 const RequestTab = createMaterialTopTabNavigator()
@@ -80,7 +81,8 @@ export const Authenticated = () => {
         }}
       />
        <Stack.Group screenOptions={{ presentation: 'modal' }}>
-        <Stack.Screen name="attendanceRequest" component={AttendanceRequestForm} />
+        <Stack.Screen name="attendanceRequestForm" component={AttendanceRequestForm} />
+        <Stack.Screen name="leaveRequestForm" component={LeaveRequestForm} />
       </Stack.Group>
     </Stack.Navigator>
   );

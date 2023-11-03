@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {FlatList, View, Text, SafeAreaView, StyleSheet, TouchableOpacity} from 'react-native';
 import {useSelector} from 'react-redux';
+import { useNavigationState } from '@react-navigation/native';
 import {callAttendanceRequestList as callatdReq} from '../../../api';
 import {
   horizontalScale,
@@ -9,8 +10,9 @@ import {
 } from '../../../assets/styles/scaling';
 import CustomModal from '../../../components/CustomModel';
 import LoadingScreen from '../../../components/LoadingScreen';
+import FloatActionBtn from '../components/FloatActionBtn';
 
-const AtdRequest = ({route,navigation, navigation: {setParams}} ) => {
+const AtdRequest = ({route,navigation, navigation: {setParams},state} ) => {
   const [atData, setAtData] = useState([]);
   const [isModalVisible, setModalVisible] = useState(false);
   const [message, setMessage] = useState("");
@@ -18,14 +20,23 @@ const AtdRequest = ({route,navigation, navigation: {setParams}} ) => {
 
   const {access_token} = useSelector(state => state.user);
 
+
+  const navigationState = useNavigationState(state => state);
+
+
+  const activeTabRoute = navigationState.routes[navigationState.index];
+
   
+  const activeTabName = activeTabRoute ? activeTabRoute.name : null;
+
+
 
   useEffect(() => {
-
-
+    
+    setLoading(true);
     callAttendanceRequestList();
     if (route.params?.showModal) {
-      setMessage("Attendance Request Submitted");
+      setMessage(route.params?.message);
       setParams({showModal: false});
       toggleModal()
     }
@@ -46,16 +57,21 @@ const AtdRequest = ({route,navigation, navigation: {setParams}} ) => {
   };
 
   const callAttendanceRequestList = () => {
-    setLoading(true);
      callatdReq(access_token).then(
       (response) => {
         setAtData(response.data)
       }
-     ).finally(
+     ).catch(
+      () => alert("Internet Connection Error")
+      
+     )
+     .finally(
       () => setLoading(false)
      )
     
   };
+
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -72,13 +88,16 @@ const AtdRequest = ({route,navigation, navigation: {setParams}} ) => {
         keyExtractor={item => item.id}
       />
       {loading && <LoadingScreen />}
+
+      <FloatActionBtn activeTabName={activeTabName} navigation={navigation}/>
+
     </SafeAreaView>
   );
 };
 
 const Item = ({title, status, date,id,navigation,statusbyManager}) => (
   <View style={styles.item}>
-    <TouchableOpacity disabled={statusbyManager == 0 || null ? false : true} onPress={() => navigation.navigate('attendanceRequest', { id: id, isEdit:true })}>
+    <TouchableOpacity disabled={statusbyManager == 0 || null ? false : true} onPress={() => navigation.navigate('attendanceRequestForm', { id: id, isEdit:true })}>
     <View style={styles.rowWrapper}>
       <View
         style={[
@@ -93,6 +112,8 @@ const Item = ({title, status, date,id,navigation,statusbyManager}) => (
       </View>
     </View>
     </TouchableOpacity>
+
+    
   </View>
 );
 
@@ -116,9 +137,9 @@ const styles = StyleSheet.create({
   },
   statusCircle: {
     justifyContent: 'center',
-    padding: horizontalScale(10),
-    width: 50,
-    height: 50,
+    // padding: horizontalScale(10),
+    width: 45,
+    height: 45,
     borderRadius: 100,
     marginRight: verticalScale(13),
   },

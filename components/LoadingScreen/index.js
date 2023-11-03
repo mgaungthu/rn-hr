@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
-    zIndex:100,
+    zIndex:1000,
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },

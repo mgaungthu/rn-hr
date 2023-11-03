@@ -2,65 +2,25 @@ import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
-  Pressable,
   TouchableOpacity,
   Platform,
-  TextInput,
   ScrollView,
+  Alert
 } from 'react-native';
-import CheckBox from '@react-native-community/checkbox';
-import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
-import {faXmark, faPaperPlane} from '@fortawesome/free-solid-svg-icons';
+
 import RNDateTimePicker from '@react-native-community/datetimepicker';
-import {Dropdown} from 'react-native-element-dropdown';
-import {callAttendanceRequestList, submitAttendanceRequest} from '../../../api';
+import {DeleteAttendanceRequest, callAttendanceRequestList, submitAttendanceRequest} from '../../../api';
 import {useSelector} from 'react-redux';
 import LoadingScreen from '../../../components/LoadingScreen';
 import CustomModal from '../../../components/CustomModel';
-import styles from './style';
-import {
-    horizontalScale,
-    verticalScale,
-  } from '../../../assets/styles/scaling';
-import ActionButton from './ActionButton';
+import ActionButton from '../components/ActionButton';
+import ActionTopRow from '../components/ActionTopRow';
+import ShiftDropDown from '../components/ShiftDropDown';
+import TypeCheckBox from '../components/TypeCheckBox';
+import InputText from '../components/InputText';
+import { month, data, checkBoxData, convertDateFormat } from '../../../assets/utils';
+import styles from './styles';
 
-const month = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-];
-
-const data = [
-  {value: '1', label: 'Office Shift'},
-  {value: '2', label: 'Front Office Shift-A'},
-  {value: '3', label: 'Duty Off'},
-  {value: '4', label: 'ADS Office Shift'},
-  {value: '5', label: 'ADS Production Shift'},
-  {value: '6', label: 'ADS S&D Shift'},
-  {value: '7', label: 'ADS S&D (Shwe Bo & Wetlet) Shift'},
-  {value: '8', label: 'ADS Driver Shift'},
-  {value: '9', label: 'ADS O&M Shift'},
-  {value: '10', label: 'ADS S&D (KISG) Shift'},
-];
-
-const checkBoxData = [
-  {id: 1, Label: 'In Time', isChecked: false},
-  {id: 2, Label: 'Out Time', isChecked: false},
-  {id: 3, Label: 'Ferry Late', isChecked: false},
-  {id: 4, Label: 'On Duty', isChecked: false},
-  {id: 5, Label: 'Travel', isChecked: false},
-  {id: 6, Label: 'Off Day', isChecked: false},
-  {id: 7, Label: 'Work From Home', isChecked: false},
-];
 
 const AttendanceRequestForm = ({route, navigation}) => {
   const [isPickerShow, setIsPickerShow] = useState(false);
@@ -111,27 +71,11 @@ const AttendanceRequestForm = ({route, navigation}) => {
         setCheckedItem(attendance_type_id);
       })
       .catch(error => {
-        alert(error);
+        console.log(error);
       })
       .finally(() => setLoading(false));
   };
-
-  const convertDateFormat = inputDate => {
-    const dateComponents = inputDate.split('/');
-    const originalDate = new Date(
-      dateComponents[2],
-      dateComponents[0] - 1,
-      dateComponents[1],
-    );
-
-    const year = originalDate.getFullYear();
-    const month = (originalDate.getMonth() + 1).toString().padStart(2, '0');
-    const day = originalDate.getDate().toString().padStart(2, '0');
-
-    const formattedDate = `${year}-${month}-${day}`;
-
-    return formattedDate;
-  };
+  
 
   const closeModal = () => {
     setTimeout(() => {
@@ -179,6 +123,7 @@ const AttendanceRequestForm = ({route, navigation}) => {
         '',
       checkedItems: checked[0].id,
       reason,
+      editId:editParams.editId
     };
 
     setLoading(true);
@@ -187,11 +132,10 @@ const AttendanceRequestForm = ({route, navigation}) => {
       formData,
       access_token,
       user_info.userId,
-      editParams,
     )
       .then(() => {
         setLoading(false);
-        navigation.navigate('atd-req', {showModal: true});
+        navigation.navigate('atd-req', {showModal: true,message: editParams.isEdit ? "Attendance Request Updated" : "Attendance Request Submitted"});
       })
       .catch(() => {
         setLoading(false);
@@ -203,35 +147,46 @@ const AttendanceRequestForm = ({route, navigation}) => {
     // console.log('Form submitted with data:', formData);
   };
 
+  
+  const showConfirmDialog = () => {
+    return Alert.alert(
+      "Are your sure?",
+      "Are you sure you want to remove this?",
+      [
+        // The "Yes" button
+        {
+          text: "Yes",
+          onPress: () => {
+            setLoading(true)
+            DeleteAttendanceRequest(access_token,editParams.editId).then(
+              (response) => {
+                setLoading(false)
+                navigation.navigate('atd-req', {showModal: true,message: "Deleted Successfully"});
+              }
+            )
+          },
+        },
+        // The "No" button
+        // Does nothing but dismiss the dialog when tapped
+        {
+          text: "No",
+        },
+      ]
+    );
+  };
+
   return (
+    
     <ScrollView contentContainerStyle={styles.scrollViewContainer}>
       <View style={styles.container}>
-        <View style={styles.topRow}>
-          <CustomModal
+      <CustomModal
             title={message}
             isVisible={isModalVisible}
             jsonPath={require('../../../assets/animations/error-check-mark.json')}
           />
-          <View style={styles.titleBox}>
-            <Pressable onPress={() => navigation.goBack()}>
-              <FontAwesomeIcon
-                icon={faXmark}
-                size={horizontalScale(23)}
-                style={styles.icon}
-              />
-            </Pressable>
-            <Text style={styles.title}>Attendance Request</Text>
-          </View>
-          <View>
-            <TouchableOpacity onPress={handleFormSubmit}>
-              <FontAwesomeIcon
-                icon={faPaperPlane}
-                size={horizontalScale(25)}
-                style={[styles.icon]}
-              />
-            </TouchableOpacity>
-          </View>
-        </View>
+
+        <ActionTopRow handleFormSubmit={handleFormSubmit} navigation={navigation} title={'Attendance Request'}/>
+
         <View>
           <Text style={styles.labelText}>Date</Text>
           <TouchableOpacity onPress={showPicker} style={styles.dateBtn}>
@@ -242,71 +197,16 @@ const AttendanceRequestForm = ({route, navigation}) => {
           </TouchableOpacity>
         </View>
 
-        <View>
-          <Text style={styles.labelText}>Office Shift</Text>
-          <Dropdown
-            mode="modal"
-            style={styles.dropdown}
-            placeholderStyle={styles.placeholderStyle}
-            selectedTextStyle={styles.selectedTextStyle}
-            itemTextStyle={{color: '#000'}}
-            activeColor={'#ccc'}
-            data={data}
-            maxHeight={verticalScale(300)}
-            labelField="label"
-            valueField="value"
-            placeholder={
-              data[selectedOfficeShift]?.label || 'Choose your Office Shift'
-            }
-            searchPlaceholder="Search..."
-            value={selectedOfficeShift}
-            onChange={item => {
-              setSelectedOfficeShift(item.value);
-            }}
-          />
-        </View>
+          <ShiftDropDown selectedOfficeShift={selectedOfficeShift} setSelectedOfficeShift={setSelectedOfficeShift} data={data} labelText={'Choose your Office Shift'}/>
 
-        <View>
-          <Text style={styles.labelText}>Attendance Type</Text>
+          <TypeCheckBox checkBoxData={checkBoxData} checkedItem={checkedItem} handleCheckboxChange={handleCheckboxChange} title={'Attendance Type'}/>
 
-          <View style={styles.checkBoxWrapper}>
-            {checkBoxData.map((item, index) => (
-              <View key={item.id} style={styles.checkboxContainer}>
-                <TouchableOpacity
-                  key={item.id}
-                  onPress={() => handleCheckboxChange(item.id)}
-                  style={{flexDirection: 'row', alignItems: 'center'}}
-                  activeOpacity={0.7}>
-                  <CheckBox
-                    tintColors="#5a5a5a"
-                    onFillColor="#5a5a5a"
-                    boxType="square"
-                    value={item.id === checkedItem}
-                    onValueChange={() => handleCheckboxChange(item.id)}
-                  />
-                  <Text style={styles.label}>{item.Label}</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-          </View>
-        </View>
+        
+          <InputText setReason={setReason} reason={reason}/>
 
-        <View>
-          <Text style={[styles.labelText]}>
-            Reason
-          </Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Please write your reason"
-            placeholderTextColor="#9e9e9e"
-            value={reason}
-            onChangeText={text => setReason(text)}
-          />
+          <ActionButton user_info={user_info} editParams={editParams} showConfirmDialog={showConfirmDialog}/>
 
-          <ActionButton user_info={user_info} editParams={editParams}/>
-        </View>
-
-        {isPickerShow && (
+          {isPickerShow && (
           <RNDateTimePicker
             value={date}
             mode={'date'}
@@ -318,7 +218,10 @@ const AttendanceRequestForm = ({route, navigation}) => {
         )}
 
         {loading && <LoadingScreen />}
+
       </View>
+
+      
     </ScrollView>
   );
 };

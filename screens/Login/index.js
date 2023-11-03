@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {
   ImageBackground,
   Image,
@@ -27,6 +27,8 @@ const Login = ({navigation}) => {
 
   useEffect(() => {}, []);
 
+    const input2Ref = useRef(null);
+
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -52,16 +54,20 @@ const Login = ({navigation}) => {
                   placeholder="User ID"
                   placeholderTextColor={'#ddd'}
                   onChangeText={value => setUserId(value)}
+                  returnKeyType='next'
+                  onSubmitEditing={() => input2Ref.current.focus()}
                 />
               </View>
 
               <View>
                 <TextInput
+                  ref={input2Ref}
                   secureTextEntry
                   style={styles.inputContainer}
                   placeholder="Password"
                   placeholderTextColor={'#ddd'}
                   onChangeText={value => setPassword(value)}
+                  returnKeyType='done'
                 />
               </View>
 

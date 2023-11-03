@@ -2,7 +2,7 @@ import axios from 'axios';
 import {readFile} from 'react-native-fs';
 
 // const API_URL = 'http://10.10.8.231/hrms/public/api/';
-const API_URL = 'http://10.10.8.33/hrms/public/api/';
+const API_URL = 'http://10.10.8.65/hrms/public/api/';
 
 export const LoginUser = async data => {
   try {
@@ -87,10 +87,10 @@ export const checkInOutApi = async (
     };
   } catch (error) {
     // console.log(error.response.data.message);
-    
+
     return {
       status: false,
-      message: error.response.data.message || error, 
+      message: error.response.data.message || error,
     };
   }
 };
@@ -119,32 +119,30 @@ export const callCheckInOutInfo = async access_token => {
   }
 };
 
-
-
-export const callAttendanceRequestList = async (access_token,id =null) => {
-
- 
+export const callAttendanceRequestList = async (access_token, id = null) => {
   const config = {Authorization: 'Bearer ' + access_token};
 
   let response;
   let trasnformed;
- 
+
   try {
-    if(!id){
-      
-     
-      response = await axios.get(API_URL + 'user/attendance_request_list',{
+    if (!id) {
+      response = await axios.get(API_URL + 'user/attendance_request_list', {
         headers: config,
       });
-     
-      trasnformed = transformArray(response.data.attendanceRequestlists); 
+
+      trasnformed = transformArray(response.data.attendanceRequestlists);
     } else {
-     
-      response = await axios.get(API_URL + 'user/attendance_request_list?edit_attendance_request_id='+id,{
-        headers: config,
-      });
-     
-       trasnformed = transformArray(response.data.attendanceRequest); 
+      response = await axios.get(
+        API_URL +
+          'user/attendance_request_list?edit_attendance_request_id=' +
+          id,
+        {
+          headers: config,
+        },
+      );
+
+      trasnformed = transformArray(response.data.attendanceRequest);
     }
 
     return {
@@ -160,30 +158,32 @@ export const callAttendanceRequestList = async (access_token,id =null) => {
 };
 
 function transformArray(originalArray) {
-  if(originalArray.length > 0 ) {
+  if (originalArray.length > 0) {
     return originalArray.map(item => ({
       id: item.id,
       status: item.statusby_manager,
       title: item.attendance_type.attendance_type_name,
       date: item.from_date,
-      statusby_manager:item.statusby_manager
+      statusby_manager: item.statusby_manager,
     }));
   }
-    const item = originalArray;
-    return {
-      id: item.id,
-      status: item.statusby_manager,
-      attendance_type_id: item.attendance_type_id,
-      date: item.from_date,
-      reason:item.reason,
-      statusby_manager:item.statusby_manager
-    }
-  
-  
+  const item = originalArray;
+  return {
+    id: item.id,
+    status: item.statusby_manager,
+    attendance_type_id: item.attendance_type_id,
+    date: item.from_date,
+    reason: item.reason,
+    statusby_manager: item.statusby_manager,
+  };
 }
 
-export const submitAttendanceRequest = async (formData,access_token, id,editParams) => {
-
+export const submitAttendanceRequest = async (
+  formData,
+  access_token,
+  id,
+  editParams,
+) => {
   const config = {
     timeout: 3000,
     headers: {
@@ -197,22 +197,227 @@ export const submitAttendanceRequest = async (formData,access_token, id,editPara
     shift_id: formData.officeShift, // You can replace this with your actual value
     attendance_type_id: formData.checkedItems, // You can replace this with your actual value
     date: formData.formattedDate, // You can replace this with your actual value
-    reason:formData.reason,
+    reason: formData.reason,
     approvedby_manager: 0,
     approvedby_hr: 0,
-    isEdit:editParams.isEdit,
-    attendance_id:editParams.editId
+    isEdit: editParams.isEdit,
+    attendance_id: editParams.editId,
   };
 
-
   try {
+    response = await axios.post(
+      API_URL + 'user/attendance_request',
+      data,
+      config,
+    );
 
-    response = await axios.post(API_URL + 'user/attendance_request', data, config);
-
-    console.log(response);
-    
+    // console.log(response);
   } catch (error) {
     console.log(error.response.data.message);
   }
+};
 
+export const DeleteAttendanceRequest = async (access_token, id) => {
+  const config = {Authorization: 'Bearer ' + access_token};
+
+  try {
+    const response = await axios.get(
+      API_URL + 'user/attendancerequest_delete?atd_id=' + id,
+      {
+        headers: config,
+      },
+    );
+
+    return {
+      status: true,
+      data: response.data,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: false,
+      data: null,
+    };
+  }
+};
+
+export const callLeaveTypeList = async (access_token,id = null) => {
+  const config = {Authorization: 'Bearer ' + access_token};
+  // console.log(id);
+
+  try {
+
+    if(!id) {
+      const response = await axios.get(API_URL + 'user/leave_history_list', {
+        headers: config,
+      });
+  
+      return {
+        status: true,
+        data: response.data,
+      };
+    }else {
+      const response = await axios.get(API_URL + 'user/leave_history_list?id='+id, {
+        headers: config,
+      });
+      // console.log(response);
+  
+      return {
+        status: true,
+        data: response.data,
+      };
+    }
+    
+  } catch (error) {
+    return {
+      status: false,
+      data: null,
+    };
+  }
+};
+
+export const callLeaveHistoryListApi = async (access_token, id = null) => {
+  const config = {Authorization: 'Bearer ' + access_token};
+
+  try {
+    if (!id) {
+      const response = await axios.get(API_URL + 'user/leave_request_list', {
+        headers: config,
+      });
+
+      const leaveRequestList = response.data.leaveRequestList.map(
+        ({
+          id,
+          statusby_manager,
+          from_date,
+          to_date,
+          total_day,
+          leave,
+          leave_type,
+        }) => ({
+          id,
+          statusby_manager,
+          from_date,
+          to_date,
+          total_day,
+          leave_name: leave.leave_name,
+          leave_id: leave.id,
+          leave_type_name: leave_type.leave_type_name,
+        }),
+      );
+
+      // console.log(leaveRequestList);
+      return {
+        status: true,
+        data: leaveRequestList,
+      };
+    } else {
+
+      const response = await axios.get(API_URL + 'user/leave_request_list?id='+id, {
+        headers: config,
+      });
+      const leaveRequestList = response.data.leaveRequestList.map(
+        ({
+          id,
+          statusby_manager,
+          from_date,
+          to_date,
+          total_day,
+          leave,
+          leave_type,
+          shift,
+          reason,
+          attach_file
+        }) => ({
+          id,
+          statusby_manager,
+          from_date,
+          to_date,
+          total_day,
+          leave_name_id: leave.id,
+          leave_type_id: leave_type.id,
+          shift_name:shift.name,
+          reason,
+          attach_file
+        }),
+      );
+      // console.log(leaveRequestList)
+      return {
+        status: true,
+        data: leaveRequestList[0],
+      };
+
+    }
+  } catch (error) {
+    return {
+      status: false,
+      data: null,
+    };
+  }
+};
+
+export const leaveRequestApi = async (data,attachment, access_token) => {
+  const config = {
+    timeout: 3000,
+    headers: {
+      Accept: 'application/json',
+      Authorization: 'Bearer  ' + access_token,
+      'Content-Type': 'multipart/form-data',
+    },
+  };
+
+  let imageInclude;
+
+  if(attachment?.uri){
+    const imgBase64 = await loadImageBase64(attachment.uri);
+  const append = {attach_file:imgBase64};
+
+   imageInclude = { ...data, ...append };
+  }
+  
+  // console.log(attachment?.uri ? imageInclude : data);
+
+  try {
+    
+    response = await axios.post(
+      API_URL + 'user/leaverequeststore',
+      attachment?.uri ? imageInclude : data,
+      config,
+    );
+    console.log(response.data);
+    return {
+      status: true,
+      message: response.data.message,
+    };
+  } catch (error) {
+    // console.log(error.response.data.message);
+    return {
+      status: false,
+      message:error.response.data.message
+    }
+  }
+};
+
+export const DeleteLeaveRequest = async (access_token, id) => {
+  const config = { Authorization: 'Bearer ' + access_token };
+
+  try {
+    const response = await axios.delete(
+      API_URL + `user/leave_request_delete/${id}`,
+      {
+        headers: config,
+      }
+    );
+    // console.log(response.data);
+    return {
+      status: true,
+      data: response.data,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: false,
+      data: null,
+    };
+  }
 };
