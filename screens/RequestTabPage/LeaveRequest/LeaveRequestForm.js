@@ -7,6 +7,7 @@ import {
 
 import {
   DeleteLeaveRequest,
+  approveConfirm,
   callLeaveHistoryListApi,
   leaveRequestApi,
 } from '../../../api';
@@ -208,7 +209,38 @@ const LeaveRequestForm = ({route, navigation, navigation: {setParams}}) => {
     // console.log(attachment)
   };
 
-  const showConfirmDialog = () => {
+  const showConfirmDialog = (action) => {
+
+    if(action === 'approve') {
+      return Alert.alert(
+        'Are your sure?',
+        'Are you sure you want to approve?',
+        [
+          // The "Yes" button
+          {
+            text: 'Yes',
+            onPress: () => {
+              setLoading(true);
+              approveConfirm(access_token,leaveRequestId,totalDays,leaveId).then(
+                (response) => {
+                  navigation.navigate('leaverequest', {
+                    showModal: true,
+                    message: response.message,
+                  });
+                }
+              ).finally(
+                () =>  setLoading(false)
+              )
+            },
+          },
+          // The "No" button
+          // Does nothing but dismiss the dialog when tapped
+          {
+            text: 'No',
+          },
+        ],
+      );
+    }
     return Alert.alert(
       'Are your sure?',
       'Are you sure you want to remove this?',
@@ -227,7 +259,7 @@ const LeaveRequestForm = ({route, navigation, navigation: {setParams}}) => {
                 });
               }
             ).finally(
-              () => setLoading(true)
+              () => setLoading(false)
             )
           },
         },

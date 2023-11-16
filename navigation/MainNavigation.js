@@ -1,41 +1,51 @@
-import { View, Text } from 'react-native';
+import {Button, Text} from 'react-native';
 import {createStackNavigator} from '@react-navigation/stack';
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
 import Home from '../screens/Home';
 import CheckInOut from '../screens/CheckInOut';
 import Login from '../screens/Login';
-import RequestTabPage from '../screens/RequestTabPage'
+import RequestTabPage from '../screens/RequestTabPage';
 import AtdRequest from '../screens/RequestTabPage/AtdRequest';
 import LeaveRequest from '../screens/RequestTabPage/LeaveRequest';
 import OtRequest from '../screens/RequestTabPage/OtRequest';
 import AttendanceRequestForm from '../screens/RequestTabPage/AtdRequest/AttendanceRequestForm';
 import LeaveRequestForm from '../screens/RequestTabPage/LeaveRequest/LeaveRequestForm';
+import AttendanceList from '../screens/AttendanceList';
 
-
-const RequestTab = createMaterialTopTabNavigator()
+const RequestTab = createMaterialTopTabNavigator();
 
 const Stack = createStackNavigator();
- 
 
 export const RequestTabNavigation = () => {
   return (
-    <RequestTab.Navigator   screenOptions={{
-      tabBarStyle: { backgroundColor: '#206aed'},
-      tabBarActiveTintColor:"#ff3636",
-      tabBarLabelStyle: { fontSize: 14,fontWeight:500},
-      tabBarInactiveTintColor:"#fff",
-      tabBarIndicatorStyle:{backgroundColor:"#ff3636"},
-      tabBarPressColor:"#ddd",
-      tabBarPressOpacity:false
-
-    }}>
-      <RequestTab.Screen name={'atd-req'} component={AtdRequest} options={{ tabBarLabel: 'Attandance' }} />
-      <RequestTab.Screen name={'leaverequest'} component={LeaveRequest} options={{ tabBarLabel: 'Leave' }} />
-      <RequestTab.Screen name={'otrequest'} component={OtRequest} options={{ tabBarLabel: 'OverTime' }}/>
+    <RequestTab.Navigator
+      screenOptions={{
+        tabBarStyle: {backgroundColor: '#206aed'},
+        tabBarActiveTintColor: '#ff3636',
+        tabBarLabelStyle: {fontSize: 14, fontWeight: 500},
+        tabBarInactiveTintColor: '#fff',
+        tabBarIndicatorStyle: {backgroundColor: '#ff3636'},
+        tabBarPressColor: '#ddd',
+        tabBarPressOpacity: false,
+      }}>
+      <RequestTab.Screen
+        name={'atd-req'}
+        component={AtdRequest}
+        options={{tabBarLabel: 'Attandance'}}
+      />
+      <RequestTab.Screen
+        name={'leaverequest'}
+        component={LeaveRequest}
+        options={{tabBarLabel: 'Leave'}}
+      />
+      <RequestTab.Screen
+        name={'otrequest'}
+        component={OtRequest}
+        options={{tabBarLabel: 'OverTime'}}
+      />
     </RequestTab.Navigator>
-  )
-}
-
+  );
+};
 
 export const NonAuthenticated = () => {
   return (
@@ -47,15 +57,16 @@ export const NonAuthenticated = () => {
   );
 };
 
-
-
-
 export const Authenticated = () => {
   return (
     <Stack.Navigator
       initialRouteName={'home'}
       screenOptions={{headerShown: false}}>
-      <Stack.Screen name={'home'} component={Home} initialParams={{ showModal: false }} />
+      <Stack.Screen
+        name={'home'}
+        component={Home}
+        initialParams={{showModal: false}}
+      />
       <Stack.Screen
         name={'checkinout'}
         component={CheckInOut}
@@ -69,21 +80,41 @@ export const Authenticated = () => {
         }}
       />
       <Stack.Screen
-        name={'requesttabpage'}
-        component={RequestTabPage}
+        name={'attendancelist'}
+        component={AttendanceList}
         options={{
           headerShown: true,
-          title: 'Request',
+          title: 'Attendance',
           headerStyle: {
             backgroundColor: '#206aed',
           },
           headerTintColor: '#fff',
         }}
       />
-       <Stack.Group screenOptions={{ presentation: 'modal' }}>
-        <Stack.Screen name="attendanceRequestForm" component={AttendanceRequestForm} />
+      <Stack.Screen
+        name={'requesttabpage'}
+        component={RequestTabPage}
+        options={({ navigation, route }) => ({
+          headerShown: true,
+          title: 'Request',
+          headerStyle: {
+            backgroundColor: '#206aed',
+          },
+          headerTintColor: '#fff',
+          headerRight: () => (
+            <Button title="Update count" />
+          ),
+          
+        })}
+      />
+      <Stack.Group screenOptions={{presentation: 'modal'}}>
+        <Stack.Screen
+          name="attendanceRequestForm"
+          component={AttendanceRequestForm}
+        />
         <Stack.Screen name="leaveRequestForm" component={LeaveRequestForm} />
       </Stack.Group>
     </Stack.Navigator>
-  );
+  );   
 };
+ 

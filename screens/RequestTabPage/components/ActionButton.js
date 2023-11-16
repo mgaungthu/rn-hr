@@ -18,7 +18,7 @@ const ActionButton = ({user_info,editParams,showConfirmDialog}) => {
             
         <View  style={styles.btnWrapper}>
           <View>
-            <TouchableOpacity  onPress={() => showConfirmDialog()} style={[styles.btn,{width:50,height:50,borderRadius:100}]}>
+            <TouchableOpacity  onPress={() => showConfirmDialog('delete')} style={[styles.btn,{width:50,height:50,borderRadius:100}]}>
               <FontAwesomeIcon icon={faTrashCan} style={styles.btnText}/>
             </TouchableOpacity>
           </View>
@@ -26,7 +26,7 @@ const ActionButton = ({user_info,editParams,showConfirmDialog}) => {
           {/* <TouchableOpacity style={[styles.btn,{backgroundColor:"#a7e34d"}]}>
             <Text style={styles.btnText}>Cancel</Text>
             </TouchableOpacity> */}
-            <TouchableOpacity style={[styles.btn,{backgroundColor:"#206aed"}]}>
+            <TouchableOpacity onPress={() => showConfirmDialog('approve')} style={[styles.btn,{backgroundColor:"#206aed"}]}>
             <Text style={styles.btnText}>Approve</Text>
             </TouchableOpacity>
           </View>
@@ -36,7 +36,7 @@ const ActionButton = ({user_info,editParams,showConfirmDialog}) => {
         
         <View  style={styles.btnWrapper}>
           <View>
-            <TouchableOpacity onPress={() => showConfirmDialog()} style={[styles.btn,{paddingVertical:verticalScale(10),borderRadius:100}]}>
+            <TouchableOpacity onPress={() => showConfirmDialog('delete')} style={[styles.btn,{paddingVertical:verticalScale(10),borderRadius:100}]}>
               <FontAwesomeIcon icon={faTrashCan} style={styles.btnText}/>
             </TouchableOpacity>
           </View>

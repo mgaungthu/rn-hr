@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     justifyContent:'flex-start',
     top: verticalScale(100),
     width: '85%',
-    height: 50,
+    height: '50',
     backgroundColor: 'black',
     borderRadius: 8,
   },

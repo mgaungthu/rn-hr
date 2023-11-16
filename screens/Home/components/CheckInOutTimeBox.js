@@ -7,8 +7,9 @@ import {
 } from '../../../assets/styles/scaling';
 
 
-const Datebox = ({CheckIn, CheckOut, reload, }) => {
+const Datebox = ({CheckIn, CheckOut, reload}) => {
 
+  // console.log(CheckIn)
   
 
   return (

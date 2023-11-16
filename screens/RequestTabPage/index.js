@@ -1,15 +1,26 @@
 import React from 'react'
 import { RequestTabNavigation } from '../../navigation/MainNavigation'
+import HeaderRight from './components/HeaderRight';
 
 
 
+const RequestTabPage = ({navigation}) => {
 
-
-const RequestTabPage = () => {
+  
+React.useEffect(() => {
+ 
+  navigation.setOptions({
+    headerRight: () => {
+     return (
+      <HeaderRight navigation={navigation}/>
+     )
+    },
+  });
+}, [navigation]);
   
   return (
 
-    <RequestTabNavigation/>
+    <RequestTabNavigation />
     
   )
 }

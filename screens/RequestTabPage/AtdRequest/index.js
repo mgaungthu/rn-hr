@@ -1,7 +1,15 @@
 import React, {useEffect, useState} from 'react';
-import {FlatList, View, Text, SafeAreaView, StyleSheet, TouchableOpacity} from 'react-native';
+import {
+  FlatList,
+  View,
+  Text,
+  SafeAreaView,
+  StyleSheet,
+  TouchableOpacity,
+  Button,
+} from 'react-native';
 import {useSelector} from 'react-redux';
-import { useNavigationState } from '@react-navigation/native';
+import {useNavigationState} from '@react-navigation/native';
 import {callAttendanceRequestList as callatdReq} from '../../../api';
 import {
   horizontalScale,
@@ -11,43 +19,53 @@ import {
 import CustomModal from '../../../components/CustomModel';
 import LoadingScreen from '../../../components/LoadingScreen';
 import FloatActionBtn from '../components/FloatActionBtn';
+import {useSelectContext} from '../SelectContext';
 
-const AtdRequest = ({route,navigation, navigation: {setParams},state} ) => {
-  const [atData, setAtData] = useState([]);
+const AtdRequest = ({route, navigation, navigation: {setParams}}) => {
+  const [atData, setAtData] = useState([{}]);
   const [isModalVisible, setModalVisible] = useState(false);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const {
+    setActiveTab,
+    setShowAll,
+    showAll,
+    setSelectedItems,
+    selectedItems,
+    toggleSelection,
+    setData,
+  } = useSelectContext();
 
   const {access_token} = useSelector(state => state.user);
 
-
   const navigationState = useNavigationState(state => state);
-
 
   const activeTabRoute = navigationState.routes[navigationState.index];
 
-  
   const activeTabName = activeTabRoute ? activeTabRoute.name : null;
 
-
+  useEffect(() => {
+    setActiveTab(activeTabName);
+    // console.log(activeTabName)
+  }, [activeTabName]);
 
   useEffect(() => {
-    
     setLoading(true);
     callAttendanceRequestList();
     if (route.params?.showModal) {
+      // setShowAll(false)
+      setLoading(false);
+      setSelectedItems([]);
       setMessage(route.params?.message);
       setParams({showModal: false});
-      toggleModal()
+      toggleModal();
     }
 
-    return () =>{
-      callAttendanceRequestList()
-      toggleModal(); 
-    }
-    
-  },[route.params?.showModal]);
-
+    return () => {
+      callAttendanceRequestList();
+      toggleModal();
+    };
+  }, [route.params?.showModal]);
 
   const toggleModal = () => {
     setModalVisible(true);
@@ -57,65 +75,125 @@ const AtdRequest = ({route,navigation, navigation: {setParams},state} ) => {
   };
 
   const callAttendanceRequestList = () => {
-     callatdReq(access_token).then(
-      (response) => {
-        setAtData(response.data)
-      }
-     ).catch(
-      () => alert("Internet Connection Error")
-      
-     )
-     .finally(
-      () => setLoading(false)
-     )
-    
+    callatdReq(access_token)
+      .then(response => {
+        setAtData(response.data);
+        const filteredData = response.data.filter(
+          item => item.statusby_manager === 0,
+        );
+        // console.log(filteredData)
+        setData(prevData => ({
+          ...prevData,
+          atRequest: [...filteredData],
+        }));
+      })
+      .catch(() => alert('Internet Connection Error'))
+      .finally(() => setLoading(false));
   };
 
+  if (loading) {
+    return <LoadingScreen />;
+  }
 
+  if (!atData || atData.length === 0) {
+    return (
+      <>
+        <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+          <Text style={{fontSize: 16, color: '#000'}}>
+            You have no Attendance request
+          </Text>
+        </View>
+        <FloatActionBtn activeTabName={activeTabName} navigation={navigation} />
+      </>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-       <CustomModal
-                    title={message}
-                    isVisible={isModalVisible}
-                    jsonPath={require('../../../assets/animations/success-checkmark.json')}
-                  />
+      <CustomModal
+        title={message}
+        isVisible={isModalVisible}
+        jsonPath={require('../../../assets/animations/success-checkmark.json')}
+      />
       <FlatList
         data={atData}
         renderItem={({item}) => (
-          <Item title={item.title} status={item.status} date={item.date} id={item.id} navigation={navigation} statusbyManager={item.statusby_manager} />
+          <Item
+            key={item.id}
+            setShowAll={setShowAll}
+            showAll={showAll}
+            title={item.title}
+            toggleSelection={toggleSelection}
+            selectedItems={selectedItems}
+            status={item.status}
+            date={item.date}
+            id={item.id}
+            navigation={navigation}
+            statusbyManager={item.statusby_manager}
+            keyExtractor={item => item.id}
+          />
         )}
-        keyExtractor={item => item.id}
       />
       {loading && <LoadingScreen />}
 
-      <FloatActionBtn activeTabName={activeTabName} navigation={navigation}/>
-
+      <FloatActionBtn activeTabName={activeTabName} navigation={navigation} />
     </SafeAreaView>
   );
 };
 
-const Item = ({title, status, date,id,navigation,statusbyManager}) => (
-  <View style={styles.item}>
-    <TouchableOpacity disabled={statusbyManager == 0 || null ? false : true} onPress={() => navigation.navigate('attendanceRequestForm', { id: id, isEdit:true })}>
-    <View style={styles.rowWrapper}>
-      <View
-        style={[
-          styles.statusCircle,
-          {backgroundColor: status === 1 ? '#43A047' : "#a7e34d"},
-        ]}>
-        <Text style={styles.circleText}>{status === 1 ? 'A' : 'P'}</Text>
-      </View>
-      <View>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.dateText}>{date}</Text>
-      </View>
+const Item = ({
+  setShowAll,
+  showAll,
+  title,
+  status,
+  date,
+  id,
+  navigation,
+  statusbyManager,
+  selectedItems,
+  toggleSelection,
+}) => {
+  return (
+    <View
+      style={[
+        styles.item,
+        {
+          backgroundColor:
+            selectedItems.includes(id) && !statusbyManager ? '#ddd' : '#fff',
+        },
+      ]}>
+      <TouchableOpacity
+        onLongPress={() => {
+          setShowAll(true);
+          toggleSelection(id);
+        }}
+        delayLongPress={1000}
+        disabled={statusbyManager == 0 || null ? false : true}
+        onPress={() => {
+          selectedItems.length === 1 || showAll
+            ? toggleSelection(id)
+            : navigation.navigate('attendanceRequestForm', {
+                id: id,
+                isEdit: true,
+              });
+        }}>
+        <View style={styles.rowWrapper}>
+          <View
+            style={[
+              styles.statusCircle,
+              {backgroundColor: status === 1 ? '#43A047' : '#a7e34d'},
+            ]}>
+            <Text style={styles.circleText}>{status === 1 ? 'A' : 'P'}</Text>
+          </View>
+          <View>
+            <Text style={styles.title}>{title}</Text>
+            <Text style={styles.dateText}>{date}</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
     </View>
-    </TouchableOpacity>
-
-    
-  </View>
-);
+  );
+};
 
 export default AtdRequest;
 

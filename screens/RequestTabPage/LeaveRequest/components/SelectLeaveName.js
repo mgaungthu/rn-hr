@@ -7,6 +7,7 @@ import {
   Modal,
   TouchableHighlight,
   FlatList,
+  BackHandler
 } from 'react-native';
 import {
   horizontalScale,
@@ -24,11 +25,15 @@ const SelectLeaveName = ({setLeaveId, setLoading,editParams}) => {
   const [selectedLeave, setSelectedLeave] = useState(null);
   const {access_token} = useSelector(state => state.user);
 
+  
+
+
   useEffect(() => {
 
-   
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
     
     if (isModalVisible) {
+      
       setLoading(true);
       callLeaveTypeList(access_token)
         .then(response => {
@@ -37,7 +42,11 @@ const SelectLeaveName = ({setLeaveId, setLoading,editParams}) => {
         })
         .finally(() => setLoading(false));
     }
+
+    return () => backHandler.remove();
+
   }, [isModalVisible]);
+  
 
   useEffect(() => {
     if(editParams.isEdit){
@@ -54,6 +63,17 @@ const SelectLeaveName = ({setLeaveId, setLoading,editParams}) => {
         .finally(() => setLoading(false));
     }
   }, [editParams.isEdit])
+
+
+  const backAction = () => {
+    if (isModalVisible) {
+      // Close the modal if it's open
+      setModalVisible(false);
+      return true; // Prevent default behavior (e.g., exiting the app)
+    }
+    return false; // Allow default behavior (e.g., navigating back)
+    
+  };
   
 
   const toggleModal = () => {
@@ -97,7 +117,7 @@ const SelectLeaveName = ({setLeaveId, setLoading,editParams}) => {
         </>
       )}
 
-      <Modal visible={isModalVisible} animationType="fade">
+      <Modal visible={isModalVisible} animationType="fade" onRequestClose={toggleModal}>
         <View style={styles.modalWrapper}>
           <View style={styles.topActionRow}>
             <Pressable onPress={toggleModal}>

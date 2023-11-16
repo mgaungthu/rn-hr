@@ -18,6 +18,7 @@ import {
 import CustomModal from '../../../components/CustomModel';
 import LoadingScreen from '../../../components/LoadingScreen';
 import FloatActionBtn from '../components/FloatActionBtn';
+import { useSelectContext } from '../SelectContext';
 
 const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
   const [atData, setAtData] = useState([]);
@@ -33,13 +34,19 @@ const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
 
   const activeTabName = activeTabRoute ? activeTabRoute.name : null;
 
+  const {setShowAll,showAll, setSelectedItems,selectedItems, toggleSelection, toggleSelectAll, setData} = useSelectContext()
+
+  
+  
   useEffect(() => {
     setLoading(true);
     callLeaveHistoryList();
     if (route.params?.showModal) {
+      setLoading(false);
       setMessage(route.params?.message);
       setParams({showModal: false});
       toggleModal();
+      
     }
 
     return () => {
@@ -59,10 +66,33 @@ const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
     callLeaveHistoryListApi(access_token)
       .then(response => {
         setAtData(response.data);
+        const filteredData = response.data.filter(item => item.statusby_manager === 0);
+        setData(prevData => ({
+          ...prevData,
+          leaveRequest: [...filteredData]
+        }));
       })
-      .catch(() => alert('Internet Connection Error'))
+      .catch((error) => console.log(error))
       .finally(() => setLoading(false));
   };
+
+  if(loading) {
+    return (
+      <LoadingScreen/>
+    )
+  }
+
+  if(!atData || atData.length === 0) {
+    return (
+      <>
+      <View style={{flex:1,alignItems:'center',justifyContent:"center"}}>
+      <Text style={{fontSize:scaleFontSize(16),color:"#000"}}>You have no Leave request</Text>
+      </View>
+      <FloatActionBtn activeTabName={activeTabName} navigation={navigation} />
+      </>
+    )
+  }
+  
 
   return (
     <SafeAreaView style={styles.container}>
@@ -75,6 +105,11 @@ const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
         data={atData}
         renderItem={({item}) => (
           <Item
+            key={item.id}
+            setShowAll={setShowAll}
+            showAll={showAll}
+            toggleSelection={toggleSelection}
+            selectedItems={selectedItems}
             title={item.leave_name}
             from_date={item.from_date}
             to_date={item.to_date}
@@ -84,9 +119,9 @@ const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
             leave_type_name={item.leave_type_name}
             navigation={navigation}
             statusbyManager={item.statusby_manager}
+            keyExtractor={item => item.id}
           />
         )}
-        keyExtractor={item => item.id}
       />
       {loading && <LoadingScreen />}
 
@@ -95,12 +130,23 @@ const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
   );
 };
 
-const Item = ({title, status, from_date,to_date,totalDay,leave_type_name,id,leave_id, navigation, statusbyManager}) => (
-  <View style={styles.item}>
+const Item = ({setShowAll,showAll,selectedItems,toggleSelection,title, status, from_date,to_date,totalDay,leave_type_name,id,leave_id, navigation, statusbyManager}) => (
+  <View style={[
+    styles.item,
+    {
+      backgroundColor:
+      selectedItems.some(item => Object.values(item).includes(id)) && !statusbyManager ? '#ddd' : '#fff',
+    },
+  ]}>
     <TouchableOpacity
+      onLongPress={() => {
+        setShowAll(true)
+        toggleSelection({id,total_day:totalDay,leave_id});
+      }}
+      delayLongPress={1000}
       disabled={statusbyManager == 0 || null ? false : true}
       onPress={() =>
-        navigation.navigate('leaveRequestForm', {leave_id:leave_id,id: id, isEdit: true})
+        selectedItems.length === 1 || showAll ? toggleSelection({id,total_day:totalDay,leave_id})  : navigation.navigate('leaveRequestForm', {leave_id:leave_id,id: id, isEdit: true})
       }>
       <View style={styles.rowWrapper}>
         <View style={styles.leftBox}>

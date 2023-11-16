@@ -20,6 +20,7 @@ import {
   checkInStatus,
   checkOutStatus,
 } from '../../redux/reducers/CheckInOutStatus';
+import {getFormattedDate} from '../../assets/utils';
 
 const Home = ({route, navigation, navigation: {setParams}}) => {
   const [isModalVisible, setModalVisible] = useState(false);
@@ -67,7 +68,7 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
     if (response.data) {
       // console.log('dwadwa')
       const {check_in_time, check_out_time} = response.data;
-      dispatch(checkInStatus({time: check_in_time, status: true}));
+      dispatch(checkInStatus({time: check_in_time || '0:00', status: true}));
       dispatch(checkOutStatus({time: check_out_time || '0:00', status: true}));
     } else {
       dispatch(checkInStatus({time: '0:00', status: false}));
@@ -146,40 +147,43 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
                   Office Shift
                 </Text>
                 <Text style={{fontSize: scaleFontSize(14), color: '#fff'}}>
-                  Wednesday, 04 Oct 2023
+                  {getFormattedDate()}
                 </Text>
               </View>
 
               <CheckInOutTimeBox CheckIn={CheckIn} CheckOut={CheckOut} />
 
               <View style={styles.boxWrapper}>
-                <View style={styles.box}>
-                  <TouchableOpacity
-                    onPress={() => navigation.navigate('checkinout')}
-                    activeOpacity={0.7}>
-                    <Image
-                      source={require('../../assets/images/ic_alarm_clock.png')}
-                      style={styles.boxImg}
-                    />
-                  </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.box}
+                  onPress={() => navigation.navigate('checkinout')}
+                  activeOpacity={0.9}>
+                  <Image
+                    source={require('../../assets/images/ic_alarm_clock.png')}
+                    style={styles.boxImg}
+                  />
                   <Text style={{fontSize: scaleFontSize(18), color: '#fda1ba'}}>
                     Check In/Out
                   </Text>
-                </View>
-                <View style={styles.box}>
-                  <TouchableOpacity
-                    activeOpacity={0.7}
-                    onPress={() => navigation.navigate('requesttabpage')}>
-                    <Image
-                      source={require('../../assets/images/ic_calendar_leave.png')}
-                      style={styles.boxImg}
-                    />
-                  </TouchableOpacity>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.box}
+                  activeOpacity={0.9}
+                  onPress={() => navigation.navigate('requesttabpage')}>
+                  <Image
+                    source={require('../../assets/images/ic_calendar_leave.png')}
+                    style={styles.boxImg}
+                  />
                   <Text style={{fontSize: scaleFontSize(18), color: '#fda1ba'}}>
                     Request
                   </Text>
-                </View>
-                <View style={styles.box}>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.box}
+                  activeOpacity={0.9}
+                  onPress={() => navigation.navigate('attendancelist')}>
                   <Image
                     source={require('../../assets/images/ic_calendar_plus.png')}
                     style={styles.boxImg}
@@ -187,8 +191,9 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
                   <Text style={{fontSize: scaleFontSize(18), color: '#fda1ba'}}>
                     Attendance
                   </Text>
-                </View>
-                <View style={styles.box}>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.box} activeOpacity={0.9}>
                   <Image
                     source={require('../../assets/images/ic_calendar_timeline.png')}
                     style={styles.boxImg}
@@ -196,8 +201,9 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
                   <Text style={{fontSize: scaleFontSize(18), color: '#fda1ba'}}>
                     Overtime
                   </Text>
-                </View>
-                <View style={styles.box}>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.box} activeOpacity={0.9}>
                   <Image
                     source={require('../../assets/images/ic_calendar_edit.png')}
                     style={styles.boxImg}
@@ -205,21 +211,22 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
                   <Text style={{fontSize: scaleFontSize(18), color: '#fda1ba'}}>
                     Approval
                   </Text>
-                </View>
-                <View style={styles.box}>
-                  <TouchableOpacity
-                    onPress={() => {
-                      dispatch(resetUser());
-                    }}>
-                    <Image
-                      source={require('../../assets/images/ic_settings.png')}
-                      style={styles.boxImg}
-                    />
-                  </TouchableOpacity>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.box}
+                  activeOpacity={0.9}
+                  onPress={() => {
+                    dispatch(resetUser());
+                  }}>
+                  <Image
+                    source={require('../../assets/images/ic_settings.png')}
+                    style={styles.boxImg}
+                  />
                   <Text style={{fontSize: scaleFontSize(18), color: '#fda1ba'}}>
                     Settings
                   </Text>
-                </View>
+                </TouchableOpacity>
               </View>
             </View>
           </View>

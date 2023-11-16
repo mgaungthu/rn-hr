@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 
 import RNDateTimePicker from '@react-native-community/datetimepicker';
-import {DeleteAttendanceRequest, callAttendanceRequestList, submitAttendanceRequest} from '../../../api';
+import {DeleteAttendanceRequest, approveAttendanceRequest, callAttendanceRequestList, submitAttendanceRequest} from '../../../api';
 import {useSelector} from 'react-redux';
 import LoadingScreen from '../../../components/LoadingScreen';
 import CustomModal from '../../../components/CustomModel';
@@ -123,10 +123,11 @@ const AttendanceRequestForm = ({route, navigation}) => {
         '',
       checkedItems: checked[0].id,
       reason,
-      editId:editParams.editId
+      editParams
     };
 
     setLoading(true);
+    
 
     submitAttendanceRequest(
       formData,
@@ -137,7 +138,8 @@ const AttendanceRequestForm = ({route, navigation}) => {
         setLoading(false);
         navigation.navigate('atd-req', {showModal: true,message: editParams.isEdit ? "Attendance Request Updated" : "Attendance Request Submitted"});
       })
-      .catch(() => {
+      .catch((error) => {
+        console.log(error);
         setLoading(false);
         setModalVisible(true);
         setMessage('Internet Connection Error');
@@ -148,7 +150,36 @@ const AttendanceRequestForm = ({route, navigation}) => {
   };
 
   
-  const showConfirmDialog = () => {
+  const showConfirmDialog = (action) => {
+
+    if(action === 'approve') {
+      return Alert.alert(
+        "Are your sure?",
+        "Are you sure you want to approve?",
+        [
+          // The "Yes" button
+          {
+            text: "Yes",
+            onPress: () => {
+              setLoading(true)
+                approveAttendanceRequest(editParams.editId,access_token).then(
+                  (response) => {
+                     navigation.navigate('atd-req', {showModal: true,message: "Approve Successfully"});
+                  }
+                ).finally(
+                  ()=> setLoading(false)
+                )
+             
+            },
+          },
+          // The "No" button
+          // Does nothing but dismiss the dialog when tapped
+          {
+            text: "No",
+          },
+        ]
+      );
+    }
     return Alert.alert(
       "Are your sure?",
       "Are you sure you want to remove this?",

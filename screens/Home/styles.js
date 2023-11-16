@@ -31,17 +31,17 @@ export default styles = StyleSheet.create({
       overflow: 'hidden',
     },
     secWrapper: {
-      marginHorizontal: horizontalScale(30),
+      marginHorizontal: horizontalScale(20),
     },
     dateBox:{
-      marginBottom:verticalScale(20)
+      marginBottom:verticalScale(15)
     },
     boxWrapper: {
       flexDirection: 'row',
       flexWrap: 'wrap',
       justifyContent: 'space-between',
       gap: horizontalScale(15),
-      marginTop: verticalScale(35),
+      marginTop: verticalScale(30),
       paddingBottom:verticalScale(20),
     },
     box: {

@@ -60,3 +60,85 @@ export const month = [
 
     return formattedDate;
   };
+
+ export function getDayName(dateString) {
+  // Create a new Date object using the date string
+  const convertedDate = new Date(dateString);
+
+  // Get the day name
+  const options = { weekday: 'long' };
+  const dayName = new Intl.DateTimeFormat('en-US', options).format(convertedDate);
+
+  return dayName;
+}
+
+export function convertDateFormat2(dateString) {
+  // Create a new Date object using the date string
+  const convertedDate = new Date(dateString);
+
+  // Get the day, month abbreviation, and year
+  const day = convertedDate.getDate();
+  const monthAbbreviation = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(convertedDate);
+  const year = convertedDate.getFullYear();
+
+  // Format the date as "DD-MMM-YYYY"
+  const formattedDate = `${day}-${monthAbbreviation}-${year}`;
+
+  return formattedDate;
+}
+
+
+export const getFormattedDate = () => {
+  const options = {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  };
+
+  const currentDate = new Date();
+  return currentDate.toLocaleDateString('en-US', options);
+};
+
+export function distance(lat1, lon1, lat2, lon2, unit) {
+  if (lat1 == lat2 && lon1 == lon2) {
+    return 0;
+  } else {
+    var radlat1 = (Math.PI * lat1) / 180;
+    var radlat2 = (Math.PI * lat2) / 180;
+    var theta = lon1 - lon2;
+    var radtheta = (Math.PI * theta) / 180;
+    var dist =
+      Math.sin(radlat1) * Math.sin(radlat2) +
+      Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+    if (dist > 1) {
+      dist = 1;
+    }
+    dist = Math.acos(dist);
+    dist = (dist * 180) / Math.PI;
+    dist = dist * 60 * 1.1515;
+    if (unit == "K") {
+      dist = dist * 1.609344;
+    }
+    if (unit == "N") {
+      dist = dist * 0.8684;
+    }
+    return dist;
+  }
+}
+
+export const getCompare = (time1, time2) => {
+  // console.log(time1,time2)
+  const [hours1, minutes1, ampm1] = time1.match(/(\d+):(\d+)\s([APMapm]{2})/).slice(1);
+  const [hours2, minutes2, ampm2] = time2.match(/(\d+):(\d+)\s([APMapm]{2})/).slice(1);
+
+  const militaryHours1 = ampm1.toUpperCase() === 'PM' ? parseInt(hours1, 10) + 12 : parseInt(hours1, 10);
+  const militaryHours2 = ampm2.toUpperCase() === 'PM' ? parseInt(hours2, 10) + 12 : parseInt(hours2, 10);
+
+  if (militaryHours1 === militaryHours2) {
+    return parseInt(minutes1, 10) > parseInt(minutes2, 10);
+  }
+
+  // console.log(militaryHours1 > militaryHours2)
+  return militaryHours1 > militaryHours2;
+};

@@ -17,6 +17,7 @@ import MapView from './components/MapView';
 import CheckInOutBtn from './components/CheckInOutBtn';
 import styles from './styles';
 import LoadingScreen from '../../components/LoadingScreen';
+import { distance, getCompare } from '../../assets/utils';
 
 
 const requestLocationPermission = async () => {
@@ -51,13 +52,35 @@ const CheckInOut = ({navigation}) => {
   const [message, setMessage] = useState('');
   const [latLong, setLatLong] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [checkInOut,setCheckInOut] = useState(false);
   const {access_token, user_info} = useSelector(state => state.user);
   const {CheckIn} = useSelector(state => state.checkinout);
+
+  const [formattedDate, setFormattedDate] = useState('');
+
 
 
   const dispatch = useDispatch();
 
   useEffect(() => {
+    // Function to get the formatted date
+    const getFormattedDate = () => {
+      const options = {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      };
+
+      const currentDate = new Date();
+      return currentDate.toLocaleDateString('en-US', options);
+    };
+
+    // Set the initial formatted date
+    setFormattedDate(getFormattedDate());
+
+    setCheckInOut(getCompare(getCurrentTimeFormatted(), user_info.shift.cutoff_time))
+
     const result = requestLocationPermission();
 
     result.then(res => {
@@ -106,7 +129,35 @@ const CheckInOut = ({navigation}) => {
     }
   };
 
+  
+  const getCurrentTimeFormatted = () => {
+    const currentDate = new Date();
+  
+    let hours = currentDate.getHours();
+    const minutes = currentDate.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+  
+    // Convert hours to 12-hour format
+    hours = hours % 12 || 12;
+  
+    return `${hours}:${minutes < 10 ? '0' : ''}${minutes} ${ampm}`;
+  };
+
+
+
+
   const callCheckInOut = async imgUri => {
+
+    const range = distance(user_info.location.latitude,user_info.location.longitude,latLong[1],latLong[0])
+
+    // console.log(range > 0.1)
+
+    if(!user_info.location_allow && range > 0.09) {
+      setLoading(false);
+      setMessage('Out of Office`s location');
+      setModalVisible(true);
+      return false;
+    }
 
     try {
       response = await checkInOutApi(
@@ -114,13 +165,13 @@ const CheckInOut = ({navigation}) => {
         latLong,
         access_token,
         user_info.userId,
-        CheckIn.status
+        CheckIn.status,
+        checkInOut
       );
       if (response.status) {
-        if(CheckIn.status){
+        if(CheckIn.status || CheckInOut){
           dispatch(checkOutStatus({time:response.time,status:true}));
         }else {
-          
           dispatch(checkInStatus({time:response.time,status:true})); 
         }
         setLoading(false);
@@ -183,13 +234,13 @@ const CheckInOut = ({navigation}) => {
             <ClockText />
           </View>
           <View>
-            <Text style={styles.dateText}>Tuesday, 10 Oct 2023</Text>
+            <Text style={styles.dateText}>{formattedDate}</Text>
           </View>
           <View style={{marginTop: 10}}>
             <Text style={styles.shiftText}>Front Office Shift-A</Text>
           </View>
 
-          <CheckInOutBtn callCamera={callCamera} CheckIn={CheckIn}/>
+          <CheckInOutBtn callCamera={callCamera} CheckIn={CheckIn} checkInOut={checkInOut}/>
 
           <View>
             <Text style={styles.shiftText}>Open gps to check in/out</Text>
