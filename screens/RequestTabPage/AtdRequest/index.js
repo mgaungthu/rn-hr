@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {
   FlatList,
   View,
@@ -8,9 +8,9 @@ import {
   TouchableOpacity,
   Button,
 } from 'react-native';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {useNavigationState} from '@react-navigation/native';
-import {callAttendanceRequestList as callatdReq} from '../../../api';
+import {callAttendanceRequestAll, callAttendanceRequestList as callatdReq} from '../../../api';
 import {
   horizontalScale,
   scaleFontSize,
@@ -20,9 +20,12 @@ import CustomModal from '../../../components/CustomModel';
 import LoadingScreen from '../../../components/LoadingScreen';
 import FloatActionBtn from '../components/FloatActionBtn';
 import {useSelectContext} from '../SelectContext';
+import { setAttendanceRequests } from '../../../redux/reducers/attendanceList';
 
 const AtdRequest = ({route, navigation, navigation: {setParams}}) => {
   const [atData, setAtData] = useState([{}]);
+  const [visibleData, setVisibleData] = useState([]); // Data to be displayed
+  const [visibleItemCount, setVisibleItemCount] = useState(10); // Initial number of items to display
   const [isModalVisible, setModalVisible] = useState(false);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -36,17 +39,22 @@ const AtdRequest = ({route, navigation, navigation: {setParams}}) => {
     setData,
   } = useSelectContext();
 
-  const {access_token} = useSelector(state => state.user);
+  const {user_info,access_token} = useSelector(state => state.user);
 
   const navigationState = useNavigationState(state => state);
 
   const activeTabRoute = navigationState.routes[navigationState.index];
 
   const activeTabName = activeTabRoute ? activeTabRoute.name : null;
+  const dispatch = useDispatch()
+
+  const scrollViewRef = useRef();
+
 
   useEffect(() => {
     setActiveTab(activeTabName);
     // console.log(activeTabName)
+    setVisibleItemCount(10)
   }, [activeTabName]);
 
   useEffect(() => {
@@ -67,6 +75,12 @@ const AtdRequest = ({route, navigation, navigation: {setParams}}) => {
     };
   }, [route.params?.showModal]);
 
+  useEffect(() => {
+    // Slice the data array to include only the visible items
+    const slicedData = atData.slice(0, visibleItemCount);
+    setVisibleData(slicedData);
+  }, [visibleItemCount, atData]);
+
   const toggleModal = () => {
     setModalVisible(true);
     setTimeout(() => {
@@ -75,7 +89,30 @@ const AtdRequest = ({route, navigation, navigation: {setParams}}) => {
   };
 
   const callAttendanceRequestList = () => {
-    callatdReq(access_token)
+    
+    if(user_info.approved_person){
+      callAttendanceRequestAll(access_token).then(
+        (response) => {
+          if(response.status){
+            dispatch(setAttendanceRequests(response.data))
+            setAtData(response.data);
+          const filteredData = response.data.filter(
+            item => item.statusby_manager === 0,
+          );
+          // console.log(filteredData)
+          setData(prevData => ({
+            ...prevData,
+            atRequest: [...filteredData],
+          }));
+          }
+          
+        }
+      ).catch(
+        () => alert("Internet Connection Error")
+      )
+      .finally(() => setLoading(false));
+    } else {
+      callatdReq(access_token)
       .then(response => {
         setAtData(response.data);
         const filteredData = response.data.filter(
@@ -89,7 +126,32 @@ const AtdRequest = ({route, navigation, navigation: {setParams}}) => {
       })
       .catch(() => alert('Internet Connection Error'))
       .finally(() => setLoading(false));
+    }
+   
   };
+
+
+
+  const handleScroll = (event) => {
+    const currentOffset = event.nativeEvent.contentOffset.y;
+    const direction = currentOffset > (scrollViewRef.current?.lastOffset || 0) ? 'down' : 'up';
+
+    // Check if the user is pulling up
+    if (direction === 'down') {
+      setTimeout(() => {
+        const newVisibleItemCount = visibleItemCount + 5;
+        setVisibleItemCount(newVisibleItemCount);
+      }, 1000);
+     
+      // Add your logic here
+    }else {
+      setVisibleItemCount(10)
+    }
+
+    // Save the current offset for the next comparison
+    scrollViewRef.current.lastOffset = currentOffset;
+  };
+
 
   if (loading) {
     return <LoadingScreen />;
@@ -116,7 +178,8 @@ const AtdRequest = ({route, navigation, navigation: {setParams}}) => {
         jsonPath={require('../../../assets/animations/success-checkmark.json')}
       />
       <FlatList
-        data={atData}
+      ref={scrollViewRef}
+        data={visibleData}
         renderItem={({item}) => (
           <Item
             key={item.id}
@@ -133,6 +196,8 @@ const AtdRequest = ({route, navigation, navigation: {setParams}}) => {
             keyExtractor={item => item.id}
           />
         )}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
       />
       {loading && <LoadingScreen />}
 

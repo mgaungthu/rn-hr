@@ -57,7 +57,6 @@ const SelectLeaveName = ({setLeaveId, setLoading,editParams}) => {
           
           const {leave,leave_id,available,taken,balance,pending} = response.data.leaveHistories[0]
           setSelectedLeave({title:leave.leave_name,allowance:available,taken,balance,pending});
-          // console.log(response.data.leaveHistories[0]);
           setLeaveId(leave_id)
         })
         .finally(() => setLoading(false));

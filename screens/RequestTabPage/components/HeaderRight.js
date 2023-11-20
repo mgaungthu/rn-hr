@@ -27,12 +27,17 @@ const HeaderRight = ({navigation}) => {
 
   [loading, setLoading] = useState(false);
 
-  const {access_token} = useSelector(state => state.user);
+  const {access_token,user_info} = useSelector(state => state.user);
 
   useEffect(() => {
     //  console.log(activeTab)
     setSelectedItems([]);
   }, [activeTab]);
+
+  
+  if (!user_info.approved_person) {
+    return (null)
+  }
 
   return (
     <View style={styles.btnWrapper}>
@@ -126,6 +131,7 @@ const styles = StyleSheet.create({
     gap: horizontalScale(10),
   },
   text: {
+    color:"#ddd",
     padding: verticalScale(2),
   },
 });

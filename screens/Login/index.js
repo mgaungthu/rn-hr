@@ -8,6 +8,7 @@ import {
   StyleSheet,
   TextInput,
   ScrollView,
+  ActivityIndicator
 } from 'react-native';
 import {useDispatch} from 'react-redux';
 import {loginUserInfo, resetUser} from '../../redux/reducers/User';
@@ -20,12 +21,21 @@ import {
 } from '../../assets/styles/scaling';
 
 const Login = ({navigation}) => {
-  const [userId, setUserId] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [userId, setUserId] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading,setLoading] = useState('')
   const dispatch = useDispatch();
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    const timeout = setTimeout(function () {
+      setError('')
+  }, 2000)
+  
+  return function ()  {
+      clearTimeout(timeout)
+  }
+  }, [error]);
 
     const input2Ref = useRef(null);
 
@@ -75,8 +85,10 @@ const Login = ({navigation}) => {
 
               <View style={{marginTop: 20, alignItems: 'center'}}>
                 <Button
+                  loading={loading}
                   onPress={async () => {
                     try {
+                      setLoading(true)
                       const {status, message, data} = await LoginUser({
                         employee_id: userId,
                         password: password,
@@ -84,14 +96,18 @@ const Login = ({navigation}) => {
                       if (!status) {
                         setError(message);
                         dispatch(resetUser());
+                        setLoading(false)
                       } else {
+                        setLoading(false)
                         // console.log(data.userinfo.data.user_info+ " , " +data.userinfo.data.access_token);
                         dispatch(loginUserInfo(data.userinfo.data));
-  
+                        
                         navigation.navigate('home');
                         // console.log("here")
                       }
                     } catch (error) {
+                      console.log(error)
+                      setLoading(false)
                       alert("Internet Connection Error")
                     }
                     

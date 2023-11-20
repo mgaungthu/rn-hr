@@ -4,6 +4,7 @@ import {
   Text,
   SafeAreaView,
   PermissionsAndroid,
+  Alert
 } from 'react-native';
 import {launchCamera} from 'react-native-image-picker';
 import Geolocation from '@react-native-community/geolocation';
@@ -80,7 +81,7 @@ const CheckInOut = ({navigation}) => {
     setFormattedDate(getFormattedDate());
 
     setCheckInOut(getCompare(getCurrentTimeFormatted(), user_info.shift.cutoff_time))
-
+   
     const result = requestLocationPermission();
 
     result.then(res => {
@@ -92,16 +93,23 @@ const CheckInOut = ({navigation}) => {
             setLatLong([position.coords.longitude, position.coords.latitude]);
           },
           error => {
+
+            if (!user_info.location_allow) {
             // See error code charts below.
             alert(error.message);
+
+          }
           },
         );
       }
     });
+  
 
-    setTimeout(() => {
+   const timeout = setTimeout(() => {
       setModalVisible(false);
     }, 3000);
+
+    return () => timeout
   }, [isModalVisible]);
 
   const options = {
@@ -111,7 +119,35 @@ const CheckInOut = ({navigation}) => {
     maxWidth: 600,
   };
 
+  const handleCheckInOut = () => {
+    // Display a confirmation alert
+    Alert.alert(
+      'Confirmation',
+      'Are you sure you want to check in/out?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'OK',
+          onPress: () => {
+            // User pressed OK, call the check-in/out function
+            callCheckInOut(null);
+          },
+        },
+      ],
+      { cancelable: false }
+    );
+  };
+
   const callCamera = async () => {
+
+    if(!user_info.camera_allow) {
+      handleCheckInOut()
+      return true
+    }
+
     const granted = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.CAMERA,
     );
@@ -146,7 +182,7 @@ const CheckInOut = ({navigation}) => {
 
 
 
-  const callCheckInOut = async imgUri => {
+  const callCheckInOut = async (imgUri) => {
 
     const range = distance(user_info.location.latitude,user_info.location.longitude,latLong[1],latLong[0])
 
@@ -159,6 +195,14 @@ const CheckInOut = ({navigation}) => {
       return false;
     }
 
+    if(!user_info.location_allow && !latLong.length) {
+      setLoading(false);
+      setMessage('Please open location services');
+      setModalVisible(true);
+      return false;
+    }
+    
+    setLoading(true)
     try {
       response = await checkInOutApi(
         imgUri,

@@ -56,16 +56,16 @@ const Item = ({checkInTime, checkOutTime, date, timeInStatus}) => (
           </View>
         </View>
         <View>
-          <Text style={styles.title}> {convertDateFormat2(date)}</Text>
+          <Text style={[styles.title,{color:"#016A70"}]}> {convertDateFormat2(date)}</Text>
         </View>
       </View>
 
       <View style={styles.rightBox}>
-        <Text style={styles.title}>Check in / Out</Text>
+        <Text style={[styles.title,{color:"#793FDF"}]}>Check in / Out</Text>
         <Text
           style={[
             styles.title,
-            {fontSize: scaleFontSize(12), color: '#000'},
+            {fontSize: scaleFontSize(12), color: '#016A70'},
           ]}>{`${checkInTime || ''} - ${checkOutTime || ''}`}</Text>
       </View>
     </View>
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: scaleFontSize(16),
-    color: '#206aed',
+    color: '#D2DE32',
   },
   dateText: {
     fontSize: scaleFontSize(12),

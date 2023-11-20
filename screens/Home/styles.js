@@ -57,6 +57,28 @@ export default styles = StyleSheet.create({
       height: 50,
       marginBottom: verticalScale(10),
     },
+    nameText: {
+      fontSize: scaleFontSize(20), color: '#fff'
+    },
+    countText:{
+      textAlign:"center",
+      fontSize:scaleFontSize(12),
+      color:"#fff",
+      fontWeight:"500"
+    },
+    countBox:{
+      backgroundColor:"red",
+      alignItems:"center",
+      justifyContent:"center",
+      borderRadius:100,
+      width:30,
+      height:30,
+      position:"absolute",
+      right:"30%",
+      top:"10%",
+      zIndex:1000
+      // top:-10
+    }
   });
 
 

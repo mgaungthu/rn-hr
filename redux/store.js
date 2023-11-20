@@ -7,10 +7,14 @@ import {
 } from '@reduxjs/toolkit';
 import User from './reducers/User';
 import CheckInOutStatus from './reducers/CheckInOutStatus';
+import attendanceList from './reducers/attendanceList';
+import leaveList from './reducers/leaveList';
 
 const rootReducer = combineReducers({
   user: User,
   checkinout: CheckInOutStatus,
+  attendance: attendanceList,
+  leave:leaveList
 });
 
 const configuration = {

@@ -96,8 +96,6 @@ const LeaveRequestForm = ({route, navigation, navigation: {setParams}}) => {
           setAttachment(attach_file)
           setLeaveRequestId(id);
         }
-      ).finally(
-        () => setLoading(false)
       )
       .catch(
         ()=> alert("Internet Connection Error")

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {
   FlatList,
   View,
@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import {useSelector} from 'react-redux';
 import {useNavigationState} from '@react-navigation/native';
-import {callLeaveHistoryListApi} from '../../../api';
+import {callLeaveHistoryAll, callLeaveHistoryListApi} from '../../../api';
 import {
   horizontalScale,
   scaleFontSize,
@@ -22,6 +22,8 @@ import { useSelectContext } from '../SelectContext';
 
 const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
   const [atData, setAtData] = useState([]);
+  const [visibleData, setVisibleData] = useState([]); // Data to be displayed
+  const [visibleItemCount, setVisibleItemCount] = useState(10); // Initial number of items to display
   const [isModalVisible, setModalVisible] = useState(false);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -36,7 +38,7 @@ const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
 
   const {setShowAll,showAll, setSelectedItems,selectedItems, toggleSelection, toggleSelectAll, setData} = useSelectContext()
 
-  
+  const scrollViewRef = useRef();
   
   useEffect(() => {
     setLoading(true);
@@ -55,6 +57,13 @@ const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
     };
   }, [route.params?.showModal]);
 
+
+  useEffect(() => {
+    // Slice the data array to include only the visible items
+    const slicedData = atData?.slice(0, visibleItemCount);
+    setVisibleData(slicedData);
+  }, [visibleItemCount, atData]);
+
   const toggleModal = () => {
     setModalVisible(true);
     setTimeout(() => {
@@ -63,7 +72,7 @@ const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
   };
 
   const callLeaveHistoryList = () => {
-    callLeaveHistoryListApi(access_token)
+    callLeaveHistoryAll(access_token)
       .then(response => {
         setAtData(response.data);
         const filteredData = response.data.filter(item => item.statusby_manager === 0);
@@ -75,6 +84,30 @@ const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
       .catch((error) => console.log(error))
       .finally(() => setLoading(false));
   };
+
+  const handleScroll = (event) => {
+    const currentOffset = event.nativeEvent.contentOffset.y;
+    const direction = currentOffset > (scrollViewRef.current?.lastOffset || 0) ? 'down' : 'up';
+
+    // Check if the user is pulling up
+    if (direction === 'down') {
+      setTimeout(() => {
+        const newVisibleItemCount = visibleItemCount + 5;
+        setVisibleItemCount(newVisibleItemCount);
+      }, 1000);
+     
+      // Add your logic here
+    }else {
+      setVisibleItemCount(10)
+    }
+
+    // Save the current offset for the next comparison
+    scrollViewRef.current.lastOffset = currentOffset;
+  };
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
 
   if(loading) {
     return (
@@ -102,7 +135,8 @@ const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
         jsonPath={require('../../../assets/animations/success-checkmark.json')}
       />
       <FlatList
-        data={atData}
+       ref={scrollViewRef}
+        data={visibleData}
         renderItem={({item}) => (
           <Item
             key={item.id}
@@ -122,6 +156,8 @@ const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
             keyExtractor={item => item.id}
           />
         )}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
       />
       {loading && <LoadingScreen />}
 

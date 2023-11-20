@@ -1,8 +1,8 @@
 import axios from 'axios';
 import {readFile} from 'react-native-fs';
 
-const API_URL = 'http://10.10.8.21/hrms/public/api/';
-// const API_URL = 'https://soloversion.com/api/';
+// const API_URL = 'http://10.10.8.26/hrms/public/api/';
+const API_URL = 'https://soloversion.com/api/';
 
 export const LoginUser = async data => {
   try {
@@ -27,14 +27,13 @@ const loadImageBase64 = async capturedImageURI => {
   }
 };
 
-
 export const checkInOutApi = async (
   imgUri,
   latLong,
   access_token,
   id,
   checkInStatus,
-  checkInOut
+  checkInOut,
 ) => {
   try {
     const d = new Date();
@@ -50,10 +49,12 @@ export const checkInOutApi = async (
         '-' +
         ('0' + today.getDate()).substr(-2);
 
-    const base64Image = await loadImageBase64(imgUri.uri);
+    let base64Image = null;
+    if (imgUri) {
+      base64Image = await loadImageBase64(imgUri.uri);
+    }
 
     // console.log(checkInStatus || checkInOut ? 'check-out' : 'check-in',)
-
 
     datalist = {
       employee_id: id,
@@ -65,10 +66,10 @@ export const checkInOutApi = async (
       checkOuttime: !checkInStatus
         ? '-'
         : ('0' + h).substr(-2) + ':' + ('0' + m).substr(-2) + ampm,
-      in_image: checkInStatus || checkInOut  ? 'check-out' : base64Image,
-      latitude: latLong[1],
-      longitude: latLong[0],
-      out_image: checkInStatus || checkInOut  ? base64Image : '-',
+      in_image: checkInStatus || checkInOut ? 'check-out' : base64Image,
+      latitude: latLong[1] || null,
+      longitude: latLong[0] || null,
+      out_image: checkInStatus || checkInOut ? base64Image : '-',
     };
 
     // console.log(datalist);
@@ -83,11 +84,15 @@ export const checkInOutApi = async (
     };
 
     response = await axios.post(API_URL + 'user/attendance', datalist, config);
+    console.log(response.data);
 
     return {
       status: true,
       message: response.data.message,
-      time: checkInStatus || checkInOut ? datalist.checkOuttime : datalist.checkIntime,
+      time:
+        checkInStatus || checkInOut
+          ? datalist.checkOuttime
+          : datalist.checkIntime,
     };
   } catch (error) {
     console.log(error.response.data.message);
@@ -145,9 +150,31 @@ export const callAttendanceRequestList = async (access_token, id = null) => {
           headers: config,
         },
       );
+      console.log(response.data)
 
       trasnformed = transformArray(response.data.attendanceRequest);
     }
+
+    return {
+      status: true,
+      data: trasnformed,
+    };
+  } catch (error) {
+    return {
+      status: false,
+      data: null,
+    };
+  }
+};
+
+export const callAttendanceRequestAll = async access_token => {
+  const config = {Authorization: 'Bearer ' + access_token};
+
+  try {
+    const response = await axios.get(API_URL + 'user/attendance_request_all', {
+      headers: config,
+    });
+    const trasnformed = transformArray(response.data.attendanceRequestlists);
 
     return {
       status: true,
@@ -182,11 +209,7 @@ function transformArray(originalArray) {
   };
 }
 
-export const submitAttendanceRequest = async (
-  formData,
-  access_token,
-  id,
-) => {
+export const submitAttendanceRequest = async (formData, access_token, id) => {
   const config = {
     timeout: 3000,
     headers: {
@@ -220,7 +243,6 @@ export const submitAttendanceRequest = async (
   }
 };
 
-
 export const approveAttendanceRequest = async (id, accessToken) => {
   try {
     const response = await axios.post(
@@ -231,14 +253,14 @@ export const approveAttendanceRequest = async (id, accessToken) => {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
-      }
+      },
     );
     return response.data;
   } catch (error) {
-    console.log(error.response)
+    console.log(error.response);
     return {
       status: false,
-      data: response.data.message
+      data: response.data.message,
     };
   }
 };
@@ -267,33 +289,34 @@ export const DeleteAttendanceRequest = async (access_token, id) => {
   }
 };
 
-export const callLeaveTypeList = async (access_token,id = null) => {
+export const callLeaveTypeList = async (access_token, id = null) => {
   const config = {Authorization: 'Bearer ' + access_token};
   // console.log(id);
 
   try {
-
-    if(!id) {
+    if (!id) {
       const response = await axios.get(API_URL + 'user/leave_history_list', {
         headers: config,
       });
-  
+
       return {
         status: true,
         data: response.data,
       };
-    }else {
-      const response = await axios.get(API_URL + 'user/leave_history_list?id='+id, {
-        headers: config,
-      });
+    } else {
+      const response = await axios.get(
+        API_URL + 'user/leave_history_list?id=' + id,
+        {
+          headers: config,
+        },
+      );
       // console.log(response);
-  
+
       return {
         status: true,
         data: response.data,
       };
     }
-    
   } catch (error) {
     return {
       status: false,
@@ -338,10 +361,12 @@ export const callLeaveHistoryListApi = async (access_token, id = null) => {
         data: leaveRequestList,
       };
     } else {
-
-      const response = await axios.get(API_URL + 'user/leave_request_list?id='+id, {
-        headers: config,
-      });
+      const response = await axios.get(
+        API_URL + 'user/leave_request_list?id=' + id,
+        {
+          headers: config,
+        },
+      );
       const leaveRequestList = response.data.leaveRequestList.map(
         ({
           id,
@@ -353,7 +378,7 @@ export const callLeaveHistoryListApi = async (access_token, id = null) => {
           leave_type,
           shift,
           reason,
-          attach_file
+          attach_file,
         }) => ({
           id,
           statusby_manager,
@@ -362,9 +387,9 @@ export const callLeaveHistoryListApi = async (access_token, id = null) => {
           total_day,
           leave_name_id: leave.id,
           leave_type_id: leave_type.id,
-          shift_name:shift.name,
+          shift_name: shift.name,
           reason,
-          attach_file
+          attach_file,
         }),
       );
       // console.log(leaveRequestList)
@@ -372,7 +397,6 @@ export const callLeaveHistoryListApi = async (access_token, id = null) => {
         status: true,
         data: leaveRequestList[0],
       };
-
     }
   } catch (error) {
     return {
@@ -382,7 +406,50 @@ export const callLeaveHistoryListApi = async (access_token, id = null) => {
   }
 };
 
-export const leaveRequestApi = async (data,attachment, access_token) => {
+
+export const callLeaveHistoryAll = async (access_token) => {
+  const config = {Authorization: 'Bearer ' + access_token};
+
+  try {
+      const response = await axios.get(API_URL + 'user/leave_request_all', {
+        headers: config,
+      });
+
+      const leaveRequestList = response.data.leaveRequestList.map(
+        ({
+          id,
+          statusby_manager,
+          from_date,
+          to_date,
+          total_day,
+          leave,
+          leave_type,
+        }) => ({
+          id,
+          statusby_manager,
+          from_date,
+          to_date,
+          total_day,
+          leave_name: leave.leave_name,
+          leave_id: leave.id,
+          leave_type_name: leave_type.leave_type_name,
+        }),
+      );
+
+      return {
+        status: true,
+        data: leaveRequestList,
+      };
+    
+  } catch (error) {
+    return {
+      status: false,
+      data: null,
+    };
+  }
+};
+
+export const leaveRequestApi = async (data, attachment, access_token) => {
   const config = {
     timeout: 3000,
     headers: {
@@ -394,17 +461,16 @@ export const leaveRequestApi = async (data,attachment, access_token) => {
 
   let imageInclude;
 
-  if(attachment?.uri){
+  if (attachment?.uri) {
     const imgBase64 = await loadImageBase64(attachment.uri);
-  const append = {attach_file:imgBase64};
+    const append = {attach_file: imgBase64};
 
-   imageInclude = { ...data, ...append };
+    imageInclude = {...data, ...append};
   }
-  
+
   // console.log(attachment?.uri ? imageInclude : data);
 
   try {
-    
     response = await axios.post(
       API_URL + 'user/leaverequeststore',
       attachment?.uri ? imageInclude : data,
@@ -419,20 +485,20 @@ export const leaveRequestApi = async (data,attachment, access_token) => {
     console.log(error.response.data.message);
     return {
       status: false,
-      message:error.response.data.message
-    }
+      message: error.response.data.message,
+    };
   }
 };
 
 export const DeleteLeaveRequest = async (access_token, id) => {
-  const config = { Authorization: 'Bearer ' + access_token };
+  const config = {Authorization: 'Bearer ' + access_token};
 
   try {
     const response = await axios.delete(
       API_URL + `user/leave_request_delete/${id}`,
       {
         headers: config,
-      }
+      },
     );
     // console.log(response.data);
     return {
@@ -448,14 +514,13 @@ export const DeleteLeaveRequest = async (access_token, id) => {
   }
 };
 
-
 export const approveConfirm = async (access_token, id, totalDays, leaveId) => {
-  const config = { Authorization: 'Bearer ' + access_token };
+  const config = {Authorization: 'Bearer ' + access_token};
 
   const data = {
-    leave_name:leaveId,
-    total_day:totalDays
-  }
+    leave_name: leaveId,
+    total_day: totalDays,
+  };
 
   try {
     const response = await axios.post(
@@ -463,52 +528,50 @@ export const approveConfirm = async (access_token, id, totalDays, leaveId) => {
       data,
       {
         headers: config,
-      }
+      },
     );
 
     return {
       status: true,
-      message: response.data.message
+      message: response.data.message,
     };
   } catch (error) {
     console.log(error.response.data);
     return {
       status: false,
-      data: response.data.message
+      data: response.data.message,
     };
   }
 };
 
-
-export const approveListConfirm = async (access_token,data) => {
-  const config = { Authorization: 'Bearer ' + access_token };
+export const approveListConfirm = async (access_token, data) => {
+  const config = {Authorization: 'Bearer ' + access_token};
   const totalDayarray = data.map(item => item.total_day);
-  const leaveIdArray  = data.map(item => item.leave_id)
+  const leaveIdArray = data.map(item => item.leave_id);
   let idArray = data.map(item => item.id);
-
 
   try {
     const response = await axios.post(
       `${API_URL}user/approve_confirm/${idArray}`,
       {
-        leave_name:leaveIdArray,
-        total_day:totalDayarray
+        leave_name: leaveIdArray,
+        total_day: totalDayarray,
       },
       {
         headers: config,
-      }
-    );  
+      },
+    );
 
-      // console.log(response.data)
+    // console.log(response.data)
     return {
       status: true,
-      message: response.data.message
+      message: response.data.message,
     };
   } catch (error) {
     console.log(error.response.data);
     return {
       status: false,
-      data: response.data.message
+      data: response.data.message,
     };
   }
 };

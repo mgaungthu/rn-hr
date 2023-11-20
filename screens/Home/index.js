@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import {
   ImageBackground,
   Image,
@@ -9,29 +9,34 @@ import {
   ScrollView,
   RefreshControl,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import styles from './styles';
 import {useDispatch, useSelector} from 'react-redux';
 import {scaleFontSize, verticalScale} from '../../assets/styles/scaling';
-import {resetUser} from '../../redux/reducers/User';
 import CustomModal from '../../components/CustomModel';
 import CheckInOutTimeBox from './components/CheckInOutTimeBox';
-import {callCheckInOutInfo as InfoApi} from '../../api';
+import {callCheckInOutInfo as InfoApi, callAttendanceRequestAll, callLeaveHistoryAll} from '../../api';
 import {
   checkInStatus,
   checkOutStatus,
 } from '../../redux/reducers/CheckInOutStatus';
 import {getFormattedDate} from '../../assets/utils';
+import { setAttendanceRequests } from '../../redux/reducers/attendanceList';
+import { setLeaveRequests } from '../../redux/reducers/leaveList';
 
 const Home = ({route, navigation, navigation: {setParams}}) => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [message, setMessage] = useState('');
 
-  const user = useSelector(state => state.user);
+  const {access_token,user_info} = useSelector(state => state.user);
   const dispatch = useDispatch();
-  const {name, designation, department} = user.user_info;
+  const {name, designation, department} = user_info;
   const {CheckIn, CheckOut} = useSelector(state => state.checkinout);
-  const access_token = user.access_token;
+  const unapprovedRequestsCount = useSelector((state) => state.attendance.unapprovedCount);
+  const unapprovedLeaveCount = useSelector((state) => state.leave.unapprovedCount);
+
+  // const access_token = user.access_token;
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
@@ -39,6 +44,17 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
       setRefreshing(false);
     }, 2000);
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      callCheckInOutInfo();
+      if(user_info.approved_person){
+        callAttendanceApprovedList()
+        callLeaveApproveList()
+      }
+    }, [])
+  );
+
 
   useEffect(() => {
     // toggleModal();
@@ -54,7 +70,17 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
     // return () => {
     //   listener;
     // };
-    callCheckInOutInfo();
+    // if(refreshing){
+    // } 
+
+    // console.log(refreshing)
+    if(refreshing){
+      callCheckInOutInfo();
+      if(user_info.approved_person){
+        callAttendanceApprovedList()
+        callLeaveApproveList()
+      }
+    }
     if (route.params?.showModal) {
       setMessage(route.params?.message);
       setParams({showModal: false});
@@ -64,7 +90,7 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
   }, [route.params?.showModal, refreshing]);
 
   const callCheckInOutInfo = async () => {
-    response = await InfoApi(access_token);
+   const response = await InfoApi(access_token);
     if (response.data) {
       // console.log('dwadwa')
       const {check_in_time, check_out_time} = response.data;
@@ -76,11 +102,53 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
     }
   };
 
+  const callAttendanceApprovedList = () => {
+     callAttendanceRequestAll(access_token).then(
+      (response) => {
+        if(response.status){
+          dispatch(setAttendanceRequests(response.data))
+        }
+        
+      }
+    ).catch(
+      () => alert("Internet Connection Error")
+    )
+  }
+
+  const callLeaveApproveList = () => {
+   callLeaveHistoryAll(access_token).then(
+      (response) => {
+        if(response.status){
+         
+          dispatch(setLeaveRequests(response.data))
+        }
+        
+      }
+    ).catch(
+      (error) => {
+        console.log(error)
+        // alert("Internet Connection Error")
+      }
+    )
+  }
+
+
+
   const toggleModal = () => {
     setModalVisible(true);
     setTimeout(() => {
       setModalVisible(false);
     }, 3000);
+  };
+
+  const adjustFontSize = (inputString) => {
+    if (inputString.length > 12) {
+      // If the string is over 12 characters, set a smaller font size
+      return { fontSize: scaleFontSize(14) };
+    } else {
+      // If the string is 12 characters or fewer, use the default font size
+      return { fontSize: scaleFontSize(20) };
+    }
   };
 
   return (
@@ -117,7 +185,7 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
                 </View>
 
                 <View style={{height: 100, marginTop: verticalScale(10)}}>
-                  <Text style={{fontSize: scaleFontSize(20), color: '#fff'}}>
+                  <Text style={[styles.nameText,adjustFontSize(name)]}>
                     {name}
                   </Text>
                   <Text
@@ -128,8 +196,9 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
                     }}>
                     {designation.name}
                   </Text>
-                  <Text style={{fontSize: scaleFontSize(14), color: '#fff'}}>
+                  <Text style={{fontSize: department.name.length > 20 ? scaleFontSize(12) : scaleFontSize(14) , color: '#fff'}}>
                     {department.name}
+                    {/* Commercial - Customer Care */}
                   </Text>
                 </View>
               </View>
@@ -203,7 +272,18 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
                   </Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.box} activeOpacity={0.9}>
+                <TouchableOpacity 
+                style={styles.box} 
+                activeOpacity={0.9}
+                onPress={() => navigation.navigate('requesttabpage')}>
+                  {user_info.approved_person === 1 && (
+                     <View style={styles.countBox}>
+                     <Text style={styles.countText}>
+                       {unapprovedRequestsCount + unapprovedLeaveCount}
+                     </Text>
+                   </View>
+                   )} 
+                 
                   <Image
                     source={require('../../assets/images/ic_calendar_edit.png')}
                     style={styles.boxImg}
@@ -216,9 +296,7 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
                 <TouchableOpacity
                   style={styles.box}
                   activeOpacity={0.9}
-                  onPress={() => {
-                    dispatch(resetUser());
-                  }}>
+                  onPress={() => navigation.navigate('settings')}>
                   <Image
                     source={require('../../assets/images/ic_settings.png')}
                     style={styles.boxImg}

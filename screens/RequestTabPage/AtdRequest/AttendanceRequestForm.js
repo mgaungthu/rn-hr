@@ -10,7 +10,7 @@ import {
 
 import RNDateTimePicker from '@react-native-community/datetimepicker';
 import {DeleteAttendanceRequest, approveAttendanceRequest, callAttendanceRequestList, submitAttendanceRequest} from '../../../api';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import LoadingScreen from '../../../components/LoadingScreen';
 import CustomModal from '../../../components/CustomModel';
 import ActionButton from '../components/ActionButton';
@@ -37,6 +37,8 @@ const AttendanceRequestForm = ({route, navigation}) => {
   });
 
   const {access_token, user_info} = useSelector(state => state.user);
+  const dispatch = useDispatch();
+
 
   useEffect(() => {
     closeModal();
@@ -162,6 +164,7 @@ const AttendanceRequestForm = ({route, navigation}) => {
             text: "Yes",
             onPress: () => {
               setLoading(true)
+        
                 approveAttendanceRequest(editParams.editId,access_token).then(
                   (response) => {
                      navigation.navigate('atd-req', {showModal: true,message: "Approve Successfully"});
@@ -228,7 +231,8 @@ const AttendanceRequestForm = ({route, navigation}) => {
           </TouchableOpacity>
         </View>
 
-          <ShiftDropDown selectedOfficeShift={selectedOfficeShift} setSelectedOfficeShift={setSelectedOfficeShift} data={data} labelText={'Choose your Office Shift'}/>
+          <ShiftDropDown selectedOfficeShift={selectedOfficeShift} setSelectedOfficeShift={setSelectedOfficeShift}
+           data={data} labelText={'Choose your Office Shift'}/>
 
           <TypeCheckBox checkBoxData={checkBoxData} checkedItem={checkedItem} handleCheckboxChange={handleCheckboxChange} title={'Attendance Type'}/>
 

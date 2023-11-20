@@ -13,7 +13,10 @@ const ShiftDropDown = ({setSelectedOfficeShift,selectedOfficeShift,data,labelTex
             style={styles.dropdown}
             placeholderStyle={styles.placeholderStyle}
             selectedTextStyle={styles.selectedTextStyle}
-            itemTextStyle={{color: '#000'}}
+            itemTextStyle={{color: '#000',fontSize:scaleFontSize(14)}}
+            containerStyle={{
+              width:280,
+            }}
             activeColor={'#ccc'}
             data={data}
             maxHeight={verticalScale(300)}
