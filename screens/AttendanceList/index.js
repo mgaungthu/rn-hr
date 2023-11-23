@@ -9,20 +9,27 @@ import {
 import {convertDateFormat2, getDayName} from '../../assets/utils';
 
 const AttendanceList = () => {
-  const {user_info} = useSelector(state => state.user);
+  const {AttendanceList} = useSelector(state => state.checkinout);
   let sortedOfficeShift
 
-  // console.log(office_shift)
-  
 
-  if (user_info && user_info.office_shift) {
+  if(AttendanceList.length === 0) {
+    return (
+      <SafeAreaView style={{flex:1,justifyContent:'center',alignItems:'center'}}>
+         <Text style={styles.title}>Please load data at home</Text>
+      </SafeAreaView>
+    )
+  }
+
+  if (AttendanceList) {
     // Create a new array before sorting to avoid modifying the original array
-     sortedOfficeShift = [...user_info.office_shift].sort(function(a, b) {
+     sortedOfficeShift = [...AttendanceList].sort(function(a, b) {
       return new Date(b.date) - new Date(a.date);
     });
   
     // Now you can use sortedOfficeShift as the sorted array
   }
+  
 
   return (
     <SafeAreaView style={styles.container}>

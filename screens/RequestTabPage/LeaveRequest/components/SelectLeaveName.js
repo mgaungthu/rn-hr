@@ -19,7 +19,7 @@ import {faEdit, faClose} from '@fortawesome/free-solid-svg-icons';
 import {callLeaveTypeList} from '../../../../api';
 import {useSelector} from 'react-redux';
 
-const SelectLeaveName = ({setLeaveId, setLoading,editParams}) => {
+const SelectLeaveName = ({setLeaveId, userId,setLoading,editParams}) => {
   const [isModalVisible, setModalVisible] = useState(false)
   const [leavedData, setLeavedData] = useState({});
   const [selectedLeave, setSelectedLeave] = useState(null);
@@ -49,19 +49,22 @@ const SelectLeaveName = ({setLeaveId, setLoading,editParams}) => {
   
 
   useEffect(() => {
-    if(editParams.isEdit){
-       
+    if(editParams.isEdit && userId){
       setLoading(true);
-      callLeaveTypeList(access_token,editParams.leave_id)
+      callLeaveTypeList(access_token,editParams.leave_id,userId)
         .then(response => {
           
           const {leave,leave_id,available,taken,balance,pending} = response.data.leaveHistories[0]
-          setSelectedLeave({title:leave.leave_name,allowance:available,taken,balance,pending});
+          // console.log(leave)
+          setSelectedLeave({title:leave?.leave_name,allowance:available,taken,balance,pending});
           setLeaveId(leave_id)
         })
+        .catch(
+          error => console.log(error)
+        )
         .finally(() => setLoading(false));
     }
-  }, [editParams.isEdit])
+  }, [editParams.isEdit,userId])
 
 
   const backAction = () => {
@@ -244,7 +247,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: verticalScale(10),
     paddingHorizontal: 0,
-    marginTop: verticalScale(30),
+    marginTop: verticalScale(20),
     marginBottom: verticalScale(10),
   },
   selectFont: {
@@ -302,6 +305,6 @@ const styles = StyleSheet.create({
     fontSize: scaleFontSize(14),
   },
   selectedLeaveContainer: {
-    marginTop: verticalScale(10),
+    // marginTop: verticalScale(10),
   },
 });

@@ -1,4 +1,4 @@
-package com.soloversion;
+package com.ananda.attendance;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;

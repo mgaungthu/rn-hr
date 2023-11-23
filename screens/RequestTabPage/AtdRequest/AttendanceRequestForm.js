@@ -25,6 +25,7 @@ import styles from './styles';
 const AttendanceRequestForm = ({route, navigation}) => {
   const [isPickerShow, setIsPickerShow] = useState(false);
   const [date, setDate] = useState(new Date(Date.now()));
+  const [requestByName,setRequestByName] = useState(null)
   const [checkedItem, setCheckedItem] = useState(null);
   const [reason, setReason] = useState('');
   const [selectedOfficeShift, setSelectedOfficeShift] = useState(null);
@@ -63,14 +64,19 @@ const AttendanceRequestForm = ({route, navigation}) => {
     callAttendanceRequestList(access_token, id)
       .then(response => {
         // console.log(response.data)
-        const {date, reason, status, attendance_type_id} = response.data;
-        const inputDate = date;
-        const outputDate = convertDateFormat(inputDate);
-        setDate(new Date(outputDate));
-        setSelectedOfficeShift(1);
-        setReason(reason);
-        // console.log(data)
-        setCheckedItem(attendance_type_id);
+
+        if(response.status){
+          const {date, reason, RequestName, attendance_type_id} = response.data;
+          const inputDate = date;
+          const outputDate = convertDateFormat(inputDate);
+          setDate(new Date(outputDate));
+          setSelectedOfficeShift(1);
+          setReason(reason);
+          setRequestByName(RequestName)
+          // console.log(data)
+          setCheckedItem(attendance_type_id);
+        }
+       
       })
       .catch(error => {
         console.log(error);
@@ -218,8 +224,9 @@ const AttendanceRequestForm = ({route, navigation}) => {
             isVisible={isModalVisible}
             jsonPath={require('../../../assets/animations/error-check-mark.json')}
           />
-
+        
         <ActionTopRow handleFormSubmit={handleFormSubmit} navigation={navigation} title={'Attendance Request'}/>
+        {/* {!editParams.isEdit &&  <Text style={styles.labelText}>Request By {requestByName}</Text>}  */}
 
         <View>
           <Text style={styles.labelText}>Date</Text>

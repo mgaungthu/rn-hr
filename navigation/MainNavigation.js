@@ -33,6 +33,7 @@ const styles = {
   },
   tabText: {
     fontWeight: 'bold',
+    color:"#ddd"
   },
   activeTab: {
     backgroundColor: 'orange',
@@ -97,11 +98,11 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
           >
             <Text style={[styles.tabText, isFocused && styles.activeTabText]}>
               {label} 
-              {route.name === 'atd-req' && unapprovedRequestsCount > 0 && user_info.approved_person && (
+              {route.name === 'atd-req' && unapprovedRequestsCount > 0 && user_info.approved_person === 1 && (
                 <Text style={styles.countText}> ({unapprovedRequestsCount})</Text>
               ) 
               } 
-              {route.name === 'leaverequest' && unapprovedLeaveCount > 0 && user_info.approved_person && (
+              {route.name === 'leaverequest' && unapprovedLeaveCount > 0 && user_info.approved_person === 1 && (
                 <Text style={styles.countText}> ({unapprovedLeaveCount})</Text>
               ) 
               }  

@@ -8,7 +8,7 @@ import {
     scaleFontSize
   } from '../../../assets/styles/scaling';
 
-const ActionTopRow = ({handleFormSubmit,navigation,title}) => {
+const ActionTopRow = ({handleFormSubmit,navigation,title,approve}) => {
   return (
     <View style={styles.topRow}>
 
@@ -23,13 +23,13 @@ const ActionTopRow = ({handleFormSubmit,navigation,title}) => {
             <Text style={styles.title}>{title}</Text>
           </View>
           <View>
-            <TouchableOpacity onPress={handleFormSubmit}>
-              <FontAwesomeIcon
-                icon={faPaperPlane}
-                size={25}
-                style={[styles.icon]}
-              />
-            </TouchableOpacity>
+               <TouchableOpacity onPress={handleFormSubmit}>
+               <FontAwesomeIcon
+                 icon={faPaperPlane}
+                 size={25}
+                 style={[styles.icon]}
+               />
+             </TouchableOpacity>
           </View>
         </View>
   )

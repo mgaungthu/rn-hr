@@ -3,6 +3,7 @@ import {
   View,
   ScrollView,
   Alert,
+  Text
 } from 'react-native';
 
 import {
@@ -24,6 +25,7 @@ import styles from './../AtdRequest/styles';
 import DateRangePicker from './components/DateRangePicker';
 import SelectLeaveName from './components/SelectLeaveName';
 import Attachment from './components/Attachment';
+import { scaleFontSize } from '../../../assets/styles/scaling';
 
 
 const LeaveRequestForm = ({route, navigation, navigation: {setParams}}) => {
@@ -33,6 +35,8 @@ const LeaveRequestForm = ({route, navigation, navigation: {setParams}}) => {
   const [endDate, setEndDate] = useState(new Date(Date.now()));
   const [totalDays, setTotalDays] = useState(1);
   const [leaveId,setLeaveId] = useState();
+  const [userId,setUserId]=useState(null)
+  const [requestName,setRequestName] = useState()
   const [checkedItem, setCheckedItem] = useState(1);
   const [reason, setReason] = useState('')
   const [selectedOfficeShift, setSelectedOfficeShift] = useState(null);
@@ -82,19 +86,20 @@ const LeaveRequestForm = ({route, navigation, navigation: {setParams}}) => {
   const callLeaveHistoryListCall = id => {
       callLeaveHistoryListApi(access_token,id).then(
         (response) => {
-          // console.log(response.data)
-          const {id,from_date,to_date,leave_name_id,leave_type_id,shift_name,total_day,reason,attach_file} = response.data;
+          const {name,employee_id,id,from_date,to_date,leave_name_id,leave_type_id,shift_name,total_day,reason,attach_file} = response.data;
           const from_dateConverted = convertDateFormat(from_date);
           const end_dateConverted = convertDateFormat(to_date);
           setStartDate(new Date(from_dateConverted));
           setEndDate(new Date(end_dateConverted));
           setLeaveId(leave_name_id)
+          setUserId(employee_id)
           setSelectedOfficeShift(shift_name);
           setCheckedItem(leave_type_id)
           setReason(reason)
           setTotalDays(total_day)
           setAttachment(attach_file)
           setLeaveRequestId(id);
+          setRequestName(name)
         }
       )
       .catch(
@@ -303,9 +308,14 @@ const LeaveRequestForm = ({route, navigation, navigation: {setParams}}) => {
           handleFormSubmit={handleFormSubmit}
           navigation={navigation}
           title={'Leave Request'}
+          approve={user_info.approved_person}
         />
 
-        <SelectLeaveName setLoading={setLoading} setLeaveId={setLeaveId} editParams={editParams}/>
+        {user_info.approved_person === 1 && requestName &&  (
+          <Text style={[styles.labelText,{fontSize:scaleFontSize(12),padding:0}]}>Request By {requestName}</Text>
+        )}
+
+        <SelectLeaveName  setLoading={setLoading} setLeaveId={setLeaveId} userId={userId} editParams={editParams}/>
 
         <DateRangePicker
           handleStartDateChange={handleStartDateChange}

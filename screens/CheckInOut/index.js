@@ -4,13 +4,16 @@ import {
   Text,
   SafeAreaView,
   PermissionsAndroid,
-  Alert
+  Alert,
 } from 'react-native';
 import {launchCamera} from 'react-native-image-picker';
 import Geolocation from '@react-native-community/geolocation';
 import ClockText from './components/ClockText';
 import {useSelector, useDispatch} from 'react-redux';
-import {checkInStatus,checkOutStatus} from '../../redux/reducers/CheckInOutStatus';
+import {
+  checkInStatus,
+  checkOutStatus,
+} from '../../redux/reducers/CheckInOutStatus';
 import {checkInOutApi} from '../../api';
 
 import CustomModal from '../../components/CustomModel';
@@ -18,8 +21,7 @@ import MapView from './components/MapView';
 import CheckInOutBtn from './components/CheckInOutBtn';
 import styles from './styles';
 import LoadingScreen from '../../components/LoadingScreen';
-import { distance, getCompare } from '../../assets/utils';
-
+import {distance, getCompare} from '../../assets/utils';
 
 const requestLocationPermission = async () => {
   try {
@@ -46,20 +48,19 @@ const requestLocationPermission = async () => {
   }
 };
 
-
 const CheckInOut = ({navigation}) => {
-
   const [isModalVisible, setModalVisible] = useState(false);
   const [message, setMessage] = useState('');
   const [latLong, setLatLong] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [checkInOut,setCheckInOut] = useState(false);
+  const [isDisabled, setDisabled] = useState(true);
+
+  
+  const [checkInOut, setCheckInOut] = useState(false);
   const {access_token, user_info} = useSelector(state => state.user);
   const {CheckIn} = useSelector(state => state.checkinout);
 
   const [formattedDate, setFormattedDate] = useState('');
-
-
 
   const dispatch = useDispatch();
 
@@ -80,36 +81,19 @@ const CheckInOut = ({navigation}) => {
     // Set the initial formatted date
     setFormattedDate(getFormattedDate());
 
-    setCheckInOut(getCompare(getCurrentTimeFormatted(), user_info.shift.cutoff_time))
-   
+    setCheckInOut(
+      getCompare(getCurrentTimeFormatted(), user_info.shift.cutoff_time),
+    );
+
     const result = requestLocationPermission();
 
-    result.then(res => {
-      // console.log('res is:', res);
-      if (res) {
-        Geolocation.getCurrentPosition(
-          position => {
-            // console.log(position);
-            setLatLong([position.coords.longitude, position.coords.latitude]);
-          },
-          error => {
+    if (result) getDeviceLocation();
 
-            if (!user_info.location_allow) {
-            // See error code charts below.
-            alert(error.message);
-
-          }
-          },
-        );
-      }
-    });
-  
-
-   const timeout = setTimeout(() => {
+    const timeout = setTimeout(() => {
       setModalVisible(false);
     }, 3000);
 
-    return () => timeout
+    return () => timeout;
   }, [isModalVisible]);
 
   const options = {
@@ -137,15 +121,20 @@ const CheckInOut = ({navigation}) => {
           },
         },
       ],
-      { cancelable: false }
+      {cancelable: false},
     );
   };
 
   const callCamera = async () => {
 
-    if(!user_info.camera_allow) {
-      handleCheckInOut()
-      return true
+    if(isDisabled) { 
+      alert("Open GPS to Check in/out")
+      return false
+    }
+
+    if (!user_info.camera_allow) {
+      handleCheckInOut();
+      return true;
     }
 
     const granted = await PermissionsAndroid.request(
@@ -165,44 +154,46 @@ const CheckInOut = ({navigation}) => {
     }
   };
 
-  
   const getCurrentTimeFormatted = () => {
     const currentDate = new Date();
-  
+
     let hours = currentDate.getHours();
     const minutes = currentDate.getMinutes();
     const ampm = hours >= 12 ? 'PM' : 'AM';
-  
+
     // Convert hours to 12-hour format
     hours = hours % 12 || 12;
-  
+
     return `${hours}:${minutes < 10 ? '0' : ''}${minutes} ${ampm}`;
   };
 
-
-
-
-  const callCheckInOut = async (imgUri) => {
-
-    const range = distance(user_info.location.latitude,user_info.location.longitude,latLong[1],latLong[0])
+  const callCheckInOut = async imgUri => {
+    const range = distance(
+      user_info.location.latitude,
+      user_info.location.longitude,
+      latLong[1],
+      latLong[0],
+    );
 
     // console.log(range > 0.1)
 
-    if(!user_info.location_allow && range > 0.09) {
+   
+
+    if (!user_info.location_allow && range > 0.03) {
       setLoading(false);
       setMessage('Out of Office`s location');
       setModalVisible(true);
       return false;
     }
 
-    if(!user_info.location_allow && !latLong.length) {
+    if (!user_info.location_allow && !latLong.length) {
       setLoading(false);
       setMessage('Please open location services');
       setModalVisible(true);
       return false;
     }
-    
-    setLoading(true)
+
+    setLoading(true);
     try {
       response = await checkInOutApi(
         imgUri,
@@ -210,16 +201,16 @@ const CheckInOut = ({navigation}) => {
         access_token,
         user_info.userId,
         CheckIn.status,
-        checkInOut
+        checkInOut,
       );
       if (response.status) {
-        if(CheckIn.status || CheckInOut){
-          dispatch(checkOutStatus({time:response.time,status:true}));
-        }else {
-          dispatch(checkInStatus({time:response.time,status:true})); 
+        if (CheckIn.status || CheckInOut) {
+          dispatch(checkOutStatus({time: response.time, status: true}));
+        } else {
+          dispatch(checkInStatus({time: response.time, status: true}));
         }
         setLoading(false);
-  
+
         navigation.navigate('home', {
           showModal: response.status,
           message: response.message,
@@ -230,28 +221,37 @@ const CheckInOut = ({navigation}) => {
         setModalVisible(true);
       }
     } catch (error) {
-         setLoading(false);
-        setMessage("Internet Connection Error");
-        setModalVisible(true);
+      setLoading(false);
+      setMessage('Internet Connection Error');
+      setModalVisible(true);
     }
-
-   
   };
 
   const getDeviceLocation = () => {
     Geolocation.requestAuthorization(
-      success => {
+      () => {
         if (latLong.length === 0) {
-          Geolocation.getCurrentPosition(position => {
-            setLatLong([position.coords.longitude, position.coords.latitude]);
-          });
+          Geolocation.getCurrentPosition(
+            position => {
+              setLatLong([position.coords.longitude, position.coords.latitude]);
+              setDisabled(false)
+            },
+            error => {
+              // if (!user_info.location_allow) {
+              // See error code charts below.
+              alert('Please open gps to use map');
+              // }
+            },
+          );
         } else {
           setLatLong([]);
         }
       },
       error => {
+        console.log(error.code);
         alert('you cannot use geolocation');
       },
+      {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
     );
   };
 
@@ -265,14 +265,13 @@ const CheckInOut = ({navigation}) => {
         />
       </View>
       <View style={styles.container}>
-      {loading && <LoadingScreen />}
-        <MapView
-          latLong={latLong}
-          getDeviceLocation={getDeviceLocation}
-        />
+        {loading && <LoadingScreen />}
+        <MapView latLong={latLong} getDeviceLocation={getDeviceLocation} />
         <View style={styles.secWrapper}>
           <View>
-            <Text style={styles.checkIntext}>Check {CheckIn.status ? "out" : "in"} Time</Text>
+            <Text style={styles.checkIntext}>
+              Check {CheckIn.status ? 'Out' : 'In'} Time
+            </Text>
           </View>
           <View style={{marginVertical: 13}}>
             <ClockText />
@@ -284,7 +283,12 @@ const CheckInOut = ({navigation}) => {
             <Text style={styles.shiftText}>Front Office Shift-A</Text>
           </View>
 
-          <CheckInOutBtn callCamera={callCamera} CheckIn={CheckIn} checkInOut={checkInOut}/>
+          <CheckInOutBtn
+          isDisabled={isDisabled}
+            callCamera={callCamera}
+            CheckIn={CheckIn}
+            checkInOut={checkInOut}
+          />
 
           <View>
             <Text style={styles.shiftText}>Open gps to check in/out</Text>
@@ -296,5 +300,3 @@ const CheckInOut = ({navigation}) => {
 };
 
 export default CheckInOut;
-
-

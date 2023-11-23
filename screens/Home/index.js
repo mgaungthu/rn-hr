@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ScrollView,
   RefreshControl,
+  ActivityIndicator
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import styles from './styles';
@@ -15,23 +16,25 @@ import {useDispatch, useSelector} from 'react-redux';
 import {scaleFontSize, verticalScale} from '../../assets/styles/scaling';
 import CustomModal from '../../components/CustomModel';
 import CheckInOutTimeBox from './components/CheckInOutTimeBox';
-import {callCheckInOutInfo as InfoApi, callAttendanceRequestAll, callLeaveHistoryAll} from '../../api';
+import {callCheckInOutInfo as InfoApi, callAttendanceRequestAll, callCheckInOutList, callLeaveHistoryAll} from '../../api';
 import {
+  AddAttendanceList,
   checkInStatus,
   checkOutStatus,
 } from '../../redux/reducers/CheckInOutStatus';
 import {getFormattedDate} from '../../assets/utils';
 import { setAttendanceRequests } from '../../redux/reducers/attendanceList';
 import { setLeaveRequests } from '../../redux/reducers/leaveList';
+import LoadingScreen from '../../components/LoadingScreen';
 
 const Home = ({route, navigation, navigation: {setParams}}) => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [message, setMessage] = useState('');
-
+  const [loading, setLoading] = useState(false);
   const {access_token,user_info} = useSelector(state => state.user);
   const dispatch = useDispatch();
-  const {name, designation, department} = user_info;
+  const {name, designation, department, approved_person} = user_info;
   const {CheckIn, CheckOut} = useSelector(state => state.checkinout);
   const unapprovedRequestsCount = useSelector((state) => state.attendance.unapprovedCount);
   const unapprovedLeaveCount = useSelector((state) => state.leave.unapprovedCount);
@@ -72,10 +75,12 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
     // };
     // if(refreshing){
     // } 
-
+    setLoading(true)
     // console.log(refreshing)
+    getCheckInOutList()
     if(refreshing){
-      callCheckInOutInfo();
+      callCheckInOutInfo()
+      getCheckInOutList()
       if(user_info.approved_person){
         callAttendanceApprovedList()
         callLeaveApproveList()
@@ -102,16 +107,31 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
     }
   };
 
+  const getCheckInOutList = () => {
+    
+    callCheckInOutList(access_token).then(
+      (response) => {
+        dispatch(AddAttendanceList(response.data))
+        setLoading(false)
+      }
+    )
+    .catch(
+      error => {console.log(error)
+      setLoading(false)}
+    )
+  }
+
   const callAttendanceApprovedList = () => {
      callAttendanceRequestAll(access_token).then(
       (response) => {
+        // console.log(response.data)
         if(response.status){
           dispatch(setAttendanceRequests(response.data))
         }
         
       }
     ).catch(
-      () => alert("Internet Connection Error")
+      (error) => alert("Internet Connection Error")
     )
   }
 
@@ -150,6 +170,7 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
       return { fontSize: scaleFontSize(20) };
     }
   };
+
 
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
@@ -260,6 +281,7 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
                   <Text style={{fontSize: scaleFontSize(18), color: '#fda1ba'}}>
                     Attendance
                   </Text>
+                  {loading && <ActivityIndicator color={"#206aed"} size={12} style={{position:"absolute",top:10,right:10}}/>}
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.box} activeOpacity={0.9}>
@@ -275,7 +297,7 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
                 <TouchableOpacity 
                 style={styles.box} 
                 activeOpacity={0.9}
-                onPress={() => navigation.navigate('requesttabpage')}>
+                onPress={() => approved_person === 1&& navigation.navigate('requesttabpage')}>
                   {user_info.approved_person === 1 && (
                      <View style={styles.countBox}>
                      <Text style={styles.countText}>

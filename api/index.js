@@ -1,7 +1,7 @@
 import axios from 'axios';
 import {readFile} from 'react-native-fs';
 
-// const API_URL = 'http://10.10.8.26/hrms/public/api/';
+// const API_URL = 'http://10.10.8.146/hrms/public/api/';
 const API_URL = 'https://soloversion.com/api/';
 
 export const LoginUser = async data => {
@@ -120,7 +120,6 @@ export const callCheckInOutInfo = async access_token => {
       data: response.data.todayOfficeShift,
     };
   } catch (error) {
-    alert(error);
     return {
       status: false,
       data: null,
@@ -139,7 +138,7 @@ export const callAttendanceRequestList = async (access_token, id = null) => {
       response = await axios.get(API_URL + 'user/attendance_request_list', {
         headers: config,
       });
-
+      
       trasnformed = transformArray(response.data.attendanceRequestlists);
     } else {
       response = await axios.get(
@@ -150,11 +149,10 @@ export const callAttendanceRequestList = async (access_token, id = null) => {
           headers: config,
         },
       );
-      console.log(response.data)
-
       trasnformed = transformArray(response.data.attendanceRequest);
     }
 
+    
     return {
       status: true,
       data: trasnformed,
@@ -289,10 +287,10 @@ export const DeleteAttendanceRequest = async (access_token, id) => {
   }
 };
 
-export const callLeaveTypeList = async (access_token, id = null) => {
+export const callLeaveTypeList = async (access_token, id = null,userId) => {
   const config = {Authorization: 'Bearer ' + access_token};
   // console.log(id);
-
+  
   try {
     if (!id) {
       const response = await axios.get(API_URL + 'user/leave_history_list', {
@@ -304,14 +302,16 @@ export const callLeaveTypeList = async (access_token, id = null) => {
         data: response.data,
       };
     } else {
+
+      // console.log(userId + "here")
       const response = await axios.get(
-        API_URL + 'user/leave_history_list?id=' + id,
+        API_URL + 'user/leave_history_list?id=' + id + '&userId=' + userId,
         {
           headers: config,
         },
       );
-      // console.log(response);
-
+      
+      // console.log(response.data);
       return {
         status: true,
         data: response.data,
@@ -333,7 +333,6 @@ export const callLeaveHistoryListApi = async (access_token, id = null) => {
       const response = await axios.get(API_URL + 'user/leave_request_list', {
         headers: config,
       });
-
       const leaveRequestList = response.data.leaveRequestList.map(
         ({
           id,
@@ -367,10 +366,13 @@ export const callLeaveHistoryListApi = async (access_token, id = null) => {
           headers: config,
         },
       );
+
       const leaveRequestList = response.data.leaveRequestList.map(
         ({
           id,
+          employee_id,
           statusby_manager,
+          employee,
           from_date,
           to_date,
           total_day,
@@ -381,6 +383,8 @@ export const callLeaveHistoryListApi = async (access_token, id = null) => {
           attach_file,
         }) => ({
           id,
+          employee_id,
+          name:employee.name,
           statusby_manager,
           from_date,
           to_date,
@@ -392,7 +396,7 @@ export const callLeaveHistoryListApi = async (access_token, id = null) => {
           attach_file,
         }),
       );
-      // console.log(leaveRequestList)
+      console.log(leaveRequestList)
       return {
         status: true,
         data: leaveRequestList[0],
@@ -468,7 +472,9 @@ export const leaveRequestApi = async (data, attachment, access_token) => {
     imageInclude = {...data, ...append};
   }
 
+
   // console.log(attachment?.uri ? imageInclude : data);
+  // console.log(data)
 
   try {
     response = await axios.post(
@@ -476,13 +482,13 @@ export const leaveRequestApi = async (data, attachment, access_token) => {
       attachment?.uri ? imageInclude : data,
       config,
     );
-    console.log(response.data);
+    // console.log(response.data);
     return {
       status: true,
       message: response.data.message,
     };
   } catch (error) {
-    console.log(error.response.data.message);
+    // console.log(error.response.data.message);
     return {
       status: false,
       message: error.response.data.message,
@@ -572,6 +578,29 @@ export const approveListConfirm = async (access_token, data) => {
     return {
       status: false,
       data: response.data.message,
+    };
+  }
+};
+
+
+export const callCheckInOutList = async access_token => {
+  const config = {Authorization: 'Bearer ' + access_token};
+
+  try {
+    const response = await axios.post(API_URL + 'user/get_user_info',{}, {
+      headers: config,
+    });
+
+    return {
+      status: true,
+      data: response.data.user.office_shift,
+    };
+  } catch (error) {
+
+    console.log(error)
+    return {
+      status: false,
+      data: null,
     };
   }
 };

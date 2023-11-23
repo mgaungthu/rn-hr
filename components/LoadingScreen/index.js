@@ -14,6 +14,7 @@ const LoadingScreen = () => {
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
+    opacity:0.6,
     justifyContent: 'center',
     zIndex:1000,
     alignItems: 'center',

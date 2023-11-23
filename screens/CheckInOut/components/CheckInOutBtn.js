@@ -1,15 +1,19 @@
 import React from 'react';
 import {TouchableOpacity, View, Image, Text} from 'react-native';
 import styles from '../styles';
-import { getCompare } from '../../../assets/utils';
+import {getCompare} from '../../../assets/utils';
 
-const CheckInOutBtn = ({callCamera,CheckIn,checkInOut}) => {
+const CheckInOutBtn = ({callCamera, CheckIn, checkInOut, isDisabled}) => {
   // console.log(checkInOut)
-    
+
   if (CheckIn.status || checkInOut) {
     return (
       <TouchableOpacity activeOpacity={0.7} onPress={() => callCamera()}>
-        <View style={[styles.btnWrapper,{backgroundColor:"#aed581",borderRadius:100}]}>
+        <View
+          style={[
+            styles.btnWrapper,
+            {backgroundColor: !isDisabled ? '#aed581' : '#d4f3b1', borderRadius: 100},
+          ]}>
           <Image
             source={require('../../../assets/images/cursor.png')}
             style={styles.checkInOutBtn}
@@ -20,8 +24,8 @@ const CheckInOutBtn = ({callCamera,CheckIn,checkInOut}) => {
   }
 
   return (
-    <TouchableOpacity activeOpacity={0.7} onPress={() => callCamera()}>
-      <View style={styles.btnWrapper}>
+    <TouchableOpacity  disabled={isDisabled} activeOpacity={0.7} onPress={() => callCamera()}>
+      <View style={[styles.btnWrapper,{backgroundColor:!isDisabled ? '#206aed' : '#5e93f1'}]}>
         <Image
           source={require('../../../assets/images/cursor.png')}
           style={styles.checkInOutBtn}

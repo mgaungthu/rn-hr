@@ -7,7 +7,7 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {useNavigationState} from '@react-navigation/native';
 import {callLeaveHistoryAll, callLeaveHistoryListApi} from '../../../api';
 import {
@@ -19,6 +19,8 @@ import CustomModal from '../../../components/CustomModel';
 import LoadingScreen from '../../../components/LoadingScreen';
 import FloatActionBtn from '../components/FloatActionBtn';
 import { useSelectContext } from '../SelectContext';
+import { setLeaveRequests } from '../../../redux/reducers/leaveList';
+
 
 const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
   const [atData, setAtData] = useState([]);
@@ -28,7 +30,9 @@ const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const {access_token} = useSelector(state => state.user);
+  const dispatch = useDispatch();
+
+  const {access_token,user_info} = useSelector(state => state.user);
 
   const navigationState = useNavigationState(state => state);
 
@@ -72,9 +76,11 @@ const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
   };
 
   const callLeaveHistoryList = () => {
-    callLeaveHistoryAll(access_token)
+    if(user_info.approved_person === 1){
+      callLeaveHistoryAll(access_token)
       .then(response => {
         setAtData(response.data);
+        dispatch(setLeaveRequests(response.data))
         const filteredData = response.data.filter(item => item.statusby_manager === 0);
         setData(prevData => ({
           ...prevData,
@@ -83,7 +89,23 @@ const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
       })
       .catch((error) => console.log(error))
       .finally(() => setLoading(false));
+    } else {
+      
+        callLeaveHistoryListApi(access_token).then(response => {
+          setAtData(response.data);
+          const filteredData = response.data.filter(item => item.statusby_manager === 0);
+          setData(prevData => ({
+            ...prevData,
+            leaveRequest: [...filteredData]
+          }));
+        })
+        .catch((error) => console.log(error))
+        .finally(() => setLoading(false));
+    }
+
   };
+
+
 
   const handleScroll = (event) => {
     const currentOffset = event.nativeEvent.contentOffset.y;

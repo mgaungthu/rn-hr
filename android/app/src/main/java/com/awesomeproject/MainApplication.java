@@ -1,4 +1,4 @@
-package com.soloversion;
+package com.ananda.attendance;
 
 import android.app.Application;
 import com.facebook.react.PackageList;
