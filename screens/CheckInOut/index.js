@@ -183,14 +183,14 @@ const CheckInOut = ({navigation}) => {
       setLoading(false);
       setMessage('Out of Office`s location');
       setModalVisible(true);
-      return false;
+      return;
     }
 
     if (!user_info.location_allow && !latLong.length) {
       setLoading(false);
       setMessage('Please open location services');
       setModalVisible(true);
-      return false;
+      return;
     }
 
     setLoading(true);
