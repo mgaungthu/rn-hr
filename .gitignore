@@ -2,9 +2,10 @@
 #
 .DS_Store
 # Ignore all files in the 'api' directory
-api/*
+#
+api/
 # Xcode
-
+#
 build/
 *.pbxuser
 !default.pbxuser
