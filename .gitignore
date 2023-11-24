@@ -1,9 +1,10 @@
 # OSX
 #
 .DS_Store
-
+api/
 # Xcode
 #
+
 build/
 *.pbxuser
 !default.pbxuser
