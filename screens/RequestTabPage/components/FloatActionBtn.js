@@ -1,17 +1,21 @@
 import React, {useEffect, useState, useRef} from 'react';
-import {TouchableOpacity, StyleSheet, Animated, Easing, TouchableHighlight} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Animated,
+  Easing,
+  TouchableHighlight,
+} from 'react-native';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import {faAdd} from '@fortawesome/free-solid-svg-icons';
 
 const FloatActionBtn = ({navigation, activeTabName}) => {
-  
   const [routeName, SetRouteName] = useState('attendanceRequestForm');
   const zoomAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-
-    startZoomInAnimation()
+    startZoomInAnimation();
     if (activeTabName) {
       SetRouteName(
         activeTabName === 'atd-req'
@@ -22,8 +26,7 @@ const FloatActionBtn = ({navigation, activeTabName}) => {
       fadeAnim.setValue(0.2);
       startZoomInAnimation();
     }
-  }, [activeTabName,zoomAnim]);
-
+  }, [activeTabName, zoomAnim]);
 
   const startZoomInAnimation = () => {
     const zoomInAnimation = Animated.timing(zoomAnim, {
@@ -40,25 +43,23 @@ const FloatActionBtn = ({navigation, activeTabName}) => {
       useNativeDriver: true,
     });
 
-    Animated.parallel([zoomInAnimation, fadeInAnimation]).start();  
-
+    Animated.parallel([zoomInAnimation, fadeInAnimation]).start();
   };
 
-
   return (
-    <TouchableHighlight
-    onPress={() => navigation.navigate(routeName)}
-    >
     <Animated.View
       style={{
         ...styles.TouchableOpacityStyle,
-        transform: [{ scale: zoomAnim }],
+        transform: [{scale: zoomAnim}],
         opacity: fadeAnim,
       }}>
-
+      <TouchableHighlight
+        style={[styles.TouchableOpacityStyle, {right: 0, bottom: 0}]}
+        underlayColor={'#DF826C'}
+        onPress={() => navigation.navigate(routeName)}>
         <FontAwesomeIcon size={20} icon={faAdd} style={styles.font} />
+      </TouchableHighlight>
     </Animated.View>
-    </TouchableHighlight>
   );
 };
 

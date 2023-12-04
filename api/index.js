@@ -1,7 +1,7 @@
 import axios from 'axios';
 import {readFile} from 'react-native-fs';
 
-// const API_URL = 'http://10.10.8.146/hrms/public/api/';
+// const API_URL = 'http://10.10.8.141/hrms/public/api/';
 const API_URL = 'https://soloversion.com/api/';
 
 export const LoginUser = async data => {

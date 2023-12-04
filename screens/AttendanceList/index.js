@@ -13,7 +13,7 @@ const AttendanceList = () => {
   let sortedOfficeShift
 
 
-  if(AttendanceList.length === 0) {
+  if(AttendanceList?.length === 0) {
     return (
       <SafeAreaView style={{flex:1,justifyContent:'center',alignItems:'center'}}>
          <Text style={styles.title}>Please load data at home</Text>

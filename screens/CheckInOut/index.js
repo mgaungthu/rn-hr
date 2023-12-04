@@ -78,6 +78,7 @@ const CheckInOut = ({navigation}) => {
       return currentDate.toLocaleDateString('en-US', options);
     };
 
+
     // Set the initial formatted date
     setFormattedDate(getFormattedDate());
 
@@ -243,15 +244,20 @@ const CheckInOut = ({navigation}) => {
               // }
             },
           );
+
+
         } else {
           setLatLong([]);
         }
+
+
+
       },
       error => {
         console.log(error.code);
         alert('you cannot use geolocation');
       },
-      {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
+      {enableHighAccuracy: true, timeout: 30000, maximumAge: 1000},
     );
   };
 
@@ -280,7 +286,7 @@ const CheckInOut = ({navigation}) => {
             <Text style={styles.dateText}>{formattedDate}</Text>
           </View>
           <View style={{marginTop: 10}}>
-            <Text style={styles.shiftText}>Front Office Shift-A</Text>
+            <Text style={styles.shiftText}>{user_info.shift.name}</Text>
           </View>
 
           <CheckInOutBtn

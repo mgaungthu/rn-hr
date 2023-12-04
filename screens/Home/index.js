@@ -34,7 +34,7 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
   const [loading, setLoading] = useState(false);
   const {access_token,user_info} = useSelector(state => state.user);
   const dispatch = useDispatch();
-  const {name, designation, department, approved_person} = user_info;
+  const {name,photo, designation, department, approved_person} = user_info;
   const {CheckIn, CheckOut} = useSelector(state => state.checkinout);
   const unapprovedRequestsCount = useSelector((state) => state.attendance.unapprovedCount);
   const unapprovedLeaveCount = useSelector((state) => state.leave.unapprovedCount);
@@ -191,7 +191,7 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
               <View style={styles.avatorBox}>
                 <View style={styles.boxShadow}>
                   <Image
-                    source={require('../../assets/images/circled_person_female.png')}
+                    source={{uri: `https://soloversion.com/uploads/employee/${photo}`}}
                     style={styles.avator}
                     resizeMode={'cover'}
                   />

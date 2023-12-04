@@ -12,8 +12,7 @@ import AttendanceRequestForm from '../screens/RequestTabPage/AtdRequest/Attendan
 import LeaveRequestForm from '../screens/RequestTabPage/LeaveRequest/LeaveRequestForm';
 import AttendanceList from '../screens/AttendanceList';
 import Settings from '../screens/Settings';
-import { useSelector } from 'react-redux';
-
+import {useSelector} from 'react-redux';
 
 const RequestTab = createMaterialTopTabNavigator();
 
@@ -33,7 +32,7 @@ const styles = {
   },
   tabText: {
     fontWeight: 'bold',
-    color:"#ddd"
+    color: '#ddd',
   },
   activeTab: {
     backgroundColor: 'orange',
@@ -43,17 +42,19 @@ const styles = {
   },
 };
 
-const CustomTabBar = ({ state, descriptors, navigation }) => {
-
-  const unapprovedRequestsCount = useSelector((state) => state.attendance.unapprovedCount);
-  const unapprovedLeaveCount = useSelector((state) => state.leave.unapprovedCount);
-  const {user_info} = useSelector(state=> state.user);
-
+const CustomTabBar = ({state, descriptors, navigation}) => {
+  const unapprovedRequestsCount = useSelector(
+    state => state.attendance.unapprovedCount,
+  );
+  const unapprovedLeaveCount = useSelector(
+    state => state.leave.unapprovedCount,
+  );
+  const {user_info} = useSelector(state => state.user);
 
   return (
     <View style={styles.tabBarContainer}>
       {state.routes.map((route, index) => {
-        const { options } = descriptors[route.key];
+        const {options} = descriptors[route.key];
         const label =
           options.tabBarLabel !== undefined
             ? options.tabBarLabel
@@ -85,28 +86,35 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
           <TouchableOpacity
             key={index}
             accessibilityRole="button"
-            accessibilityState={isFocused ? { selected: true } : {}}
+            accessibilityState={isFocused ? {selected: true} : {}}
             accessibilityLabel={options.tabBarAccessibilityLabel}
             testID={options.tabBarTestID}
             onPress={onPress}
             onLongPress={onLongPress}
             style={[
               styles.tabItem,
-              { backgroundColor: isFocused ? 'orange' : 'transparent' },
+              {backgroundColor: isFocused ? 'orange' : 'transparent'},
               isFocused && styles.activeTab,
-            ]}
-          >
+            ]}>
             <Text style={[styles.tabText, isFocused && styles.activeTabText]}>
-              {label} 
-              {route.name === 'atd-req' && unapprovedRequestsCount > 0 && user_info.approved_person === 1 && (
-                <Text style={styles.countText}> ({unapprovedRequestsCount})</Text>
-              ) 
-              } 
-              {route.name === 'leaverequest' && unapprovedLeaveCount > 0 && user_info.approved_person === 1 && (
-                <Text style={styles.countText}> ({unapprovedLeaveCount})</Text>
-              ) 
-              }  
-              </Text>
+              {label}
+              {route.name === 'atd-req' &&
+                unapprovedRequestsCount > 0 &&
+                user_info.approved_person === 1 && (
+                  <Text style={styles.countText}>
+                    {' '}
+                    ({unapprovedRequestsCount})
+                  </Text>
+                )}
+              {route.name === 'leaverequest' &&
+                unapprovedLeaveCount > 0 &&
+                user_info.approved_person === 1 && (
+                  <Text style={styles.countText}>
+                    {' '}
+                    ({unapprovedLeaveCount})
+                  </Text>
+                )}
+            </Text>
           </TouchableOpacity>
         );
       })}
@@ -117,7 +125,7 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
 export const RequestTabNavigation = () => {
   return (
     <RequestTab.Navigator
-    tabBar={(props) => <CustomTabBar {...props} />}
+      tabBar={props => <CustomTabBar {...props} />}
       screenOptions={{
         tabBarStyle: {backgroundColor: '#206aed'},
         tabBarActiveTintColor: '#ff3636',
@@ -205,17 +213,14 @@ export const Authenticated = () => {
       <Stack.Screen
         name={'requesttabpage'}
         component={RequestTabPage}
-        options={({ navigation, route }) => ({
+        options={({navigation, route}) => ({
           headerShown: true,
           title: 'Request',
           headerStyle: {
             backgroundColor: '#206aed',
           },
           headerTintColor: '#fff',
-          headerRight: () => (
-            <Button title="Update count" />
-          ),
-          
+          headerRight: () => <Button title="Update count" />,
         })}
       />
       <Stack.Group screenOptions={{presentation: 'modal'}}>
@@ -226,6 +231,5 @@ export const Authenticated = () => {
         <Stack.Screen name="leaveRequestForm" component={LeaveRequestForm} />
       </Stack.Group>
     </Stack.Navigator>
-  );   
+  );
 };
- 
