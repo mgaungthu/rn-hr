@@ -10,7 +10,10 @@ import {
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import {useNavigationState} from '@react-navigation/native';
-import {callAttendanceRequestAll, callAttendanceRequestList as callatdReq} from '../../../api';
+import {
+  callAttendanceRequestAll,
+  callAttendanceRequestList as callatdReq,
+} from '../../../api';
 import {
   horizontalScale,
   scaleFontSize,
@@ -20,10 +23,10 @@ import CustomModal from '../../../components/CustomModel';
 import LoadingScreen from '../../../components/LoadingScreen';
 import FloatActionBtn from '../components/FloatActionBtn';
 import {useSelectContext} from '../SelectContext';
-import { setAttendanceRequests } from '../../../redux/reducers/attendanceList';
+import {setAttendanceRequests} from '../../../redux/reducers/attendanceList';
 
 const AtdRequest = ({route, navigation, navigation: {setParams}}) => {
-  const [atData, setAtData] = useState([{}]);
+  const [atData, setAtData] = useState([]);
   const [visibleData, setVisibleData] = useState([]); // Data to be displayed
   const [visibleItemCount, setVisibleItemCount] = useState(10); // Initial number of items to display
   const [isModalVisible, setModalVisible] = useState(false);
@@ -39,22 +42,21 @@ const AtdRequest = ({route, navigation, navigation: {setParams}}) => {
     setData,
   } = useSelectContext();
 
-  const {user_info,access_token} = useSelector(state => state.user);
+  const {user_info, access_token} = useSelector(state => state.user);
 
   const navigationState = useNavigationState(state => state);
 
   const activeTabRoute = navigationState.routes[navigationState.index];
 
   const activeTabName = activeTabRoute ? activeTabRoute.name : null;
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   const scrollViewRef = useRef();
-
 
   useEffect(() => {
     setActiveTab(activeTabName);
     // console.log(activeTabName)
-    setVisibleItemCount(10)
+    setVisibleItemCount(10);
   }, [activeTabName]);
 
   useEffect(() => {
@@ -64,21 +66,24 @@ const AtdRequest = ({route, navigation, navigation: {setParams}}) => {
       // setShowAll(false)
       setLoading(false);
       setSelectedItems([]);
+      setVisibleData([]);
       setMessage(route.params?.message);
       setParams({showModal: false});
       toggleModal();
     }
 
     return () => {
-      callAttendanceRequestList();
       toggleModal();
     };
   }, [route.params?.showModal]);
 
   useEffect(() => {
     // Slice the data array to include only the visible items
-    const slicedData = atData.slice(0, visibleItemCount);
-    setVisibleData(slicedData);
+
+    if (atData?.length > 0) {
+      const slicedData = atData?.slice(0, visibleItemCount);
+      setVisibleData(slicedData);
+    }
   }, [visibleItemCount, atData]);
 
   const toggleModal = () => {
@@ -89,52 +94,40 @@ const AtdRequest = ({route, navigation, navigation: {setParams}}) => {
   };
 
   const callAttendanceRequestList = () => {
-    
-    if(user_info.approved_person){
-      callAttendanceRequestAll(access_token).then(
-        (response) => {
-          if(response.status){
-            dispatch(setAttendanceRequests(response.data))
+    if (user_info.approved_person) {
+      callAttendanceRequestAll(access_token)
+        .then(response => {
+          if (response.status) {
             setAtData(response.data);
-          const filteredData = response.data.filter(
-            item => item.statusby_manager === 0,
-          );
-          // console.log(filteredData)
-          setData(prevData => ({
-            ...prevData,
-            atRequest: [...filteredData],
-          }));
+            if (response.data) {
+              dispatch(setAttendanceRequests(response.data));
+              const filteredData = response.data.filter(
+                item => item.statusby_manager === 0,
+              );
+              // console.log(filteredData)
+              setData(prevData => ({
+                ...prevData,
+                atRequest: [...filteredData],
+              }));
+            }
           }
-          
-        }
-      ).catch(
-        () => alert("Internet Connection Error")
-      )
-      .finally(() => setLoading(false));
+        })
+        .catch(() => alert('Internet Connection Error'))
+        .finally(() => setLoading(false));
     } else {
       callatdReq(access_token)
-      .then(response => {
-        setAtData(response.data);
-        const filteredData = response.data.filter(
-          item => item.statusby_manager === 0,
-        );
-        // console.log(filteredData)
-        setData(prevData => ({
-          ...prevData,
-          atRequest: [...filteredData],
-        }));
-      })
-      .catch(() => alert('Internet Connection Error'))
-      .finally(() => setLoading(false));
+        .then(response => {
+          setAtData(response.data);
+        })
+        .catch(() => alert('Internet Connection Error'))
+        .finally(() => setLoading(false));
     }
-   
   };
 
-
-
-  const handleScroll = (event) => {
+  const handleScroll = event => {
     const currentOffset = event.nativeEvent.contentOffset.y;
-    const direction = currentOffset > (scrollViewRef.current?.lastOffset || 0) ? 'down' : 'up';
+    const direction =
+      currentOffset > (scrollViewRef.current?.lastOffset || 0) ? 'down' : 'up';
 
     // Check if the user is pulling up
     if (direction === 'down') {
@@ -142,22 +135,23 @@ const AtdRequest = ({route, navigation, navigation: {setParams}}) => {
         const newVisibleItemCount = visibleItemCount + 5;
         setVisibleItemCount(newVisibleItemCount);
       }, 1000);
-     
+
       // Add your logic here
-    }else {
-      setVisibleItemCount(10)
+    } else {
+      setVisibleItemCount(10);
     }
 
     // Save the current offset for the next comparison
     scrollViewRef.current.lastOffset = currentOffset;
   };
 
-
   if (loading) {
     return <LoadingScreen />;
   }
 
-  if (!atData || atData.length === 0) {
+  // console.log(visibleData)
+
+  if (visibleData.length === 0) {
     return (
       <>
         <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
@@ -178,7 +172,7 @@ const AtdRequest = ({route, navigation, navigation: {setParams}}) => {
         jsonPath={require('../../../assets/animations/success-checkmark.json')}
       />
       <FlatList
-      ref={scrollViewRef}
+        ref={scrollViewRef}
         data={visibleData}
         renderItem={({item}) => (
           <Item
@@ -186,6 +180,7 @@ const AtdRequest = ({route, navigation, navigation: {setParams}}) => {
             setShowAll={setShowAll}
             showAll={showAll}
             title={item.title}
+            name={item.name}
             toggleSelection={toggleSelection}
             selectedItems={selectedItems}
             status={item.status}
@@ -194,6 +189,7 @@ const AtdRequest = ({route, navigation, navigation: {setParams}}) => {
             navigation={navigation}
             statusbyManager={item.statusby_manager}
             keyExtractor={item => item.id}
+            user_info={user_info}
           />
         )}
         onScroll={handleScroll}
@@ -210,6 +206,7 @@ const Item = ({
   setShowAll,
   showAll,
   title,
+  name,
   status,
   date,
   id,
@@ -217,6 +214,7 @@ const Item = ({
   statusbyManager,
   selectedItems,
   toggleSelection,
+  user_info
 }) => {
   return (
     <View
@@ -243,16 +241,24 @@ const Item = ({
               });
         }}>
         <View style={styles.rowWrapper}>
-          <View
-            style={[
-              styles.statusCircle,
-              {backgroundColor: status === 1 ? '#43A047' : '#a7e34d'},
-            ]}>
-            <Text style={styles.circleText}>{status === 1 ? 'A' : 'P'}</Text>
+          <View style={styles.rowWrapper}>
+            <View
+              style={[
+                styles.statusCircle,
+                {backgroundColor: status === 1 ? '#43A047' : '#a7e34d'},
+              ]}>
+              <Text style={styles.circleText}>{status === 1 ? 'A' : 'P'}</Text>
+            </View>
+            <View>
+              <Text style={styles.title}>{title}</Text>
+              <Text style={styles.dateText}>{date}</Text>
+            </View>
           </View>
-          <View>
-            <Text style={styles.title}>{title}</Text>
-            <Text style={styles.dateText}>{date}</Text>
+          <View style={styles.rightCenter}>
+            {user_info.approved_person === 1 && (
+              <Text style={[styles.title]}>{name}</Text>
+            )}
+            
           </View>
         </View>
       </TouchableOpacity>
@@ -272,7 +278,7 @@ const styles = StyleSheet.create({
     padding: horizontalScale(12),
   },
   title: {
-    fontSize: scaleFontSize(16),
+    fontSize: scaleFontSize(14),
     color: '#206aed',
   },
   dateText: {
@@ -297,4 +303,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
   },
+  rightCenter:{
+    width:130,
+    textAlign:"center"
+  }
 });

@@ -32,6 +32,7 @@ const HeaderRight = ({navigation}) => {
   useEffect(() => {
     //  console.log(activeTab)
     setSelectedItems([]);
+    setShowAll(false);
   }, [activeTab]);
 
   

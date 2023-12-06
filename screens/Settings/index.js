@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { View, Text, TouchableOpacity, Alert, StyleSheet } from 'react-native';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { resetUser } from '../../redux/reducers/User'; // Assuming you have a userSlice
 import { resetApprove } from '../../redux/reducers/attendanceList';
 import { resetLeaveApprove } from '../../redux/reducers/leaveList';
@@ -10,6 +10,8 @@ import { resetcheckInOutStatus } from '../../redux/reducers/CheckInOutStatus';
 
 const Settings = ({ navigation }) => {
   const dispatch = useDispatch();
+
+  const {user_info} = useSelector(state => state.user)
 
   const handleLogout = () => {
     // Display a confirmation alert
@@ -40,7 +42,8 @@ const Settings = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome Back!</Text>
+      <Text style={styles.title}>Welcome Back {user_info.name}!</Text>
+      <Text style={[styles.title,{fontSize:16}]}>Your ID`s {user_info.userId}!</Text>
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.buttonText}>Logout</Text>
       </TouchableOpacity>
@@ -57,7 +60,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5', // Background color for the entire page
   },
   title: {
-    fontSize: 24,
+    fontSize: 21,
     marginBottom: 20,
     color: '#333', // Text color for the title
   },

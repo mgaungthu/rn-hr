@@ -1,8 +1,8 @@
 import {createSlice} from '@reduxjs/toolkit';
 
 const initialState = {
-  CheckIn: {status: false, time: '0:00'},
-  CheckOut: {status: false, time: '0:00'},
+  CheckIn: {status: false, time: '00:00'},
+  CheckOut: {status: false, time: '00:00'},
   AttendanceList:[]
 };
 

@@ -99,11 +99,11 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
     if (response.data) {
       // console.log('dwadwa')
       const {check_in_time, check_out_time} = response.data;
-      dispatch(checkInStatus({time: check_in_time || '0:00', status: true}));
-      dispatch(checkOutStatus({time: check_out_time || '0:00', status: true}));
+      dispatch(checkInStatus({time: check_in_time || '00:00', status: true}));
+      dispatch(checkOutStatus({time: check_out_time || '00:00', status: true}));
     } else {
-      dispatch(checkInStatus({time: '0:00', status: false}));
-      dispatch(checkOutStatus({time: '0:00', status: false}));
+      dispatch(checkInStatus({time: '00:00', status: false}));
+      dispatch(checkOutStatus({time: '00:00', status: false}));
     }
   };
 
@@ -124,14 +124,16 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
   const callAttendanceApprovedList = () => {
      callAttendanceRequestAll(access_token).then(
       (response) => {
-        // console.log(response.data)
-        if(response.status){
+        if(response.status && response.data.length > 0){
           dispatch(setAttendanceRequests(response.data))
         }
         
       }
     ).catch(
-      (error) => alert("Internet Connection Error")
+      (error) => {
+        console.log(error)
+        alert("Internet Connection Error")
+      }
     )
   }
 
@@ -217,9 +219,9 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
                     }}>
                     {designation.name}
                   </Text>
-                  <Text style={{fontSize: department.name.length > 20 ? scaleFontSize(12) : scaleFontSize(14) , color: '#fff'}}>
+                  <Text style={{fontSize: department.name.length > 20 ? scaleFontSize(12) : scaleFontSize(14) , color: '#fff',width:160}}>
                     {department.name}
-                    {/* Commercial - Customer Care */}
+                    {/* Commercial - Customer Care wadwd */}
                   </Text>
                 </View>
               </View>

@@ -1,17 +1,25 @@
 import React from 'react';
 import {View, StyleSheet} from 'react-native';
 import MapboxGL from '@rnmapbox/maps';
+import { keepToken } from '../../../api';
 
+const arrayToken = [
+  'pk.eyJ1IjoiYXVuZ3RodTIiLCJhIjoiY2xkeTVjdjF0MDBobTNwbXZrZmVpa2w3dCJ9.Pvtw_NER5ewgMH8Eldd44w',
+  'pk.eyJ1IjoibmF5bGlua3lhdyIsImEiOiJjbHBrbHd4MTYwYmRoMmlsYmp0azFmd2xoIn0.3MNwOD7jVy22DSTTcvv9vA',
+  'pk.eyJ1IjoidGhpaGF3aW4iLCJhIjoiY2xwcWJhcXZwMWs2ZzJxbGVxamowMGtkNCJ9.HTBeVB2bZQ5XNcRdiXRvTg',
+];
 
-MapboxGL.setAccessToken(
-  'sk.eyJ1IjoiYXVuZ3RodTIiLCJhIjoiY2xuaWN2NXVpMW5kZzJrbWphcXlhbmxjcCJ9.X15nsu4Vl-WbEFRhoNBa0g',
-);
+const randomIndex = Math.floor(Math.random() * arrayToken.length);
+
+MapboxGL.setAccessToken(arrayToken[randomIndex]);
+
 
 
 
 const MapView = ({getDeviceLocation, latLong}) => {
-    
 
+
+  // keepToken(accessToken)
   const createGeoJSONCircle = function (center, radiusInKm, points) {
     if (!points) points = 64;
 
@@ -52,8 +60,6 @@ const MapView = ({getDeviceLocation, latLong}) => {
       },
     ],
   };
-
-
 
   return (
     <MapboxGL.MapView

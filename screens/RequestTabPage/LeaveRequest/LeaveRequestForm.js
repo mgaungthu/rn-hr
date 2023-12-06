@@ -25,7 +25,6 @@ import styles from './../AtdRequest/styles';
 import DateRangePicker from './components/DateRangePicker';
 import SelectLeaveName from './components/SelectLeaveName';
 import Attachment from './components/Attachment';
-import { scaleFontSize } from '../../../assets/styles/scaling';
 
 
 const LeaveRequestForm = ({route, navigation, navigation: {setParams}}) => {
@@ -312,7 +311,7 @@ const LeaveRequestForm = ({route, navigation, navigation: {setParams}}) => {
         />
 
         {user_info.approved_person === 1 && requestName &&  (
-          <Text style={[styles.labelText,{fontSize:scaleFontSize(12),padding:0}]}>Request By {requestName}</Text>
+          <Text style={[styles.labelText,{padding:0}]}>Request By {requestName}</Text>
         )}
 
         <SelectLeaveName  setLoading={setLoading} setLeaveId={setLeaveId} userId={userId} editParams={editParams}/>

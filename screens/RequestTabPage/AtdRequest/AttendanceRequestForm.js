@@ -61,18 +61,17 @@ const AttendanceRequestForm = ({route, navigation}) => {
   }, [isModalVisible]);
 
   const attendaneRequestCall = id => {
-    callAttendanceRequestList(access_token, id)
+    callAttendanceRequestList(access_token, id,user_info.approved_person)
       .then(response => {
-        // console.log(response.data)
 
         if(response.status){
-          const {date, reason, RequestName, attendance_type_id} = response.data;
+          const {date, reason, attendance_type_id,name} = response.data;
           const inputDate = date;
           const outputDate = convertDateFormat(inputDate);
           setDate(new Date(outputDate));
           setSelectedOfficeShift(1);
           setReason(reason);
-          setRequestByName(RequestName)
+          setRequestByName(name)
           // console.log(data)
           setCheckedItem(attendance_type_id);
         }
@@ -227,7 +226,10 @@ const AttendanceRequestForm = ({route, navigation}) => {
         
         <ActionTopRow handleFormSubmit={handleFormSubmit} navigation={navigation} title={'Attendance Request'}/>
         {/* {!editParams.isEdit &&  <Text style={styles.labelText}>Request By {requestByName}</Text>}  */}
-
+        {user_info.approved_person === 1 && requestByName && (
+          <Text style={styles.labelText}>Request By {requestByName}</Text>
+        )}
+        
         <View>
           <Text style={styles.labelText}>Date</Text>
           <TouchableOpacity onPress={showPicker} style={styles.dateBtn}>

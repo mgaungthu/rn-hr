@@ -18,9 +18,8 @@ import {
 import CustomModal from '../../../components/CustomModel';
 import LoadingScreen from '../../../components/LoadingScreen';
 import FloatActionBtn from '../components/FloatActionBtn';
-import { useSelectContext } from '../SelectContext';
-import { setLeaveRequests } from '../../../redux/reducers/leaveList';
-
+import {useSelectContext} from '../SelectContext';
+import {setLeaveRequests} from '../../../redux/reducers/leaveList';
 
 const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
   const [atData, setAtData] = useState([]);
@@ -32,7 +31,7 @@ const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
 
   const dispatch = useDispatch();
 
-  const {access_token,user_info} = useSelector(state => state.user);
+  const {access_token, user_info} = useSelector(state => state.user);
 
   const navigationState = useNavigationState(state => state);
 
@@ -40,10 +39,18 @@ const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
 
   const activeTabName = activeTabRoute ? activeTabRoute.name : null;
 
-  const {setShowAll,showAll, setSelectedItems,selectedItems, toggleSelection, toggleSelectAll, setData} = useSelectContext()
+  const {
+    setShowAll,
+    showAll,
+    setSelectedItems,
+    selectedItems,
+    toggleSelection,
+    toggleSelectAll,
+    setData,
+  } = useSelectContext();
 
   const scrollViewRef = useRef();
-  
+
   useEffect(() => {
     setLoading(true);
     callLeaveHistoryList();
@@ -52,7 +59,6 @@ const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
       setMessage(route.params?.message);
       setParams({showModal: false});
       toggleModal();
-      
     }
 
     return () => {
@@ -60,7 +66,6 @@ const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
       toggleModal();
     };
   }, [route.params?.showModal]);
-
 
   useEffect(() => {
     // Slice the data array to include only the visible items
@@ -76,40 +81,35 @@ const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
   };
 
   const callLeaveHistoryList = () => {
-    if(user_info.approved_person === 1){
+    if (user_info.approved_person === 1) {
       callLeaveHistoryAll(access_token)
-      .then(response => {
-        setAtData(response.data);
-        dispatch(setLeaveRequests(response.data))
-        const filteredData = response.data.filter(item => item.statusby_manager === 0);
-        setData(prevData => ({
-          ...prevData,
-          leaveRequest: [...filteredData]
-        }));
-      })
-      .catch((error) => console.log(error))
-      .finally(() => setLoading(false));
-    } else {
-      
-        callLeaveHistoryListApi(access_token).then(response => {
+        .then(response => {
           setAtData(response.data);
-          const filteredData = response.data.filter(item => item.statusby_manager === 0);
+          dispatch(setLeaveRequests(response.data));
+          const filteredData = response.data.filter(
+            item => item.statusby_manager === 0,
+          );
           setData(prevData => ({
             ...prevData,
-            leaveRequest: [...filteredData]
+            leaveRequest: [...filteredData],
           }));
         })
-        .catch((error) => console.log(error))
+        .catch(error => console.log(error))
+        .finally(() => setLoading(false));
+    } else {
+      callLeaveHistoryListApi(access_token)
+        .then(response => {
+          setAtData(response.data);
+        })
+        .catch(error => console.log(error))
         .finally(() => setLoading(false));
     }
-
   };
 
-
-
-  const handleScroll = (event) => {
+  const handleScroll = event => {
     const currentOffset = event.nativeEvent.contentOffset.y;
-    const direction = currentOffset > (scrollViewRef.current?.lastOffset || 0) ? 'down' : 'up';
+    const direction =
+      currentOffset > (scrollViewRef.current?.lastOffset || 0) ? 'down' : 'up';
 
     // Check if the user is pulling up
     if (direction === 'down') {
@@ -117,10 +117,10 @@ const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
         const newVisibleItemCount = visibleItemCount + 5;
         setVisibleItemCount(newVisibleItemCount);
       }, 1000);
-     
+
       // Add your logic here
-    }else {
-      setVisibleItemCount(10)
+    } else {
+      setVisibleItemCount(10);
     }
 
     // Save the current offset for the next comparison
@@ -131,23 +131,22 @@ const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
     return <LoadingScreen />;
   }
 
-  if(loading) {
-    return (
-      <LoadingScreen/>
-    )
+  if (loading) {
+    return <LoadingScreen />;
   }
 
-  if(!atData || atData.length === 0) {
+  if (!atData || atData.length === 0) {
     return (
       <>
-      <View style={{flex:1,alignItems:'center',justifyContent:"center"}}>
-      <Text style={{fontSize:scaleFontSize(16),color:"#000"}}>You have no Leave request</Text>
-      </View>
-      <FloatActionBtn activeTabName={activeTabName} navigation={navigation} />
+        <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+          <Text style={{fontSize: scaleFontSize(16), color: '#000'}}>
+            You have no Leave request
+          </Text>
+        </View>
+        <FloatActionBtn activeTabName={activeTabName} navigation={navigation} />
       </>
-    )
+    );
   }
-  
 
   return (
     <SafeAreaView style={styles.container}>
@@ -157,7 +156,7 @@ const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
         jsonPath={require('../../../assets/animations/success-checkmark.json')}
       />
       <FlatList
-       ref={scrollViewRef}
+        ref={scrollViewRef}
         data={visibleData}
         renderItem={({item}) => (
           <Item
@@ -170,11 +169,13 @@ const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
             from_date={item.from_date}
             to_date={item.to_date}
             id={item.id}
+            name={item.name}
             leave_id={item.leave_id}
             totalDay={item.total_day}
             leave_type_name={item.leave_type_name}
             navigation={navigation}
             statusbyManager={item.statusby_manager}
+            user_info={user_info}
             keyExtractor={item => item.id}
           />
         )}
@@ -188,23 +189,49 @@ const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
   );
 };
 
-const Item = ({setShowAll,showAll,selectedItems,toggleSelection,title, status, from_date,to_date,totalDay,leave_type_name,id,leave_id, navigation, statusbyManager}) => (
-  <View style={[
-    styles.item,
-    {
-      backgroundColor:
-      selectedItems.some(item => Object.values(item).includes(id)) && !statusbyManager ? '#ddd' : '#fff',
-    },
-  ]}>
+const Item = ({
+  setShowAll,
+  showAll,
+  selectedItems,
+  toggleSelection,
+  title,
+  name,
+  from_date,
+  to_date,
+  totalDay,
+  leave_type_name,
+  id,
+  leave_id,
+  navigation,
+  statusbyManager,
+  user_info
+}) => (
+  <View
+    style={[
+      styles.item,
+      {
+        backgroundColor:
+          selectedItems.some(item => Object.values(item).includes(id)) &&
+          !statusbyManager
+            ? '#ddd'
+            : '#fff',
+      },
+    ]}>
     <TouchableOpacity
       onLongPress={() => {
-        setShowAll(true)
-        toggleSelection({id,total_day:totalDay,leave_id});
+        setShowAll(true);
+        toggleSelection({id, total_day: totalDay, leave_id});
       }}
       delayLongPress={1000}
       disabled={statusbyManager == 0 || null ? false : true}
       onPress={() =>
-        selectedItems.length === 1 || showAll ? toggleSelection({id,total_day:totalDay,leave_id})  : navigation.navigate('leaveRequestForm', {leave_id:leave_id,id: id, isEdit: true})
+        selectedItems.length === 1 || showAll
+          ? toggleSelection({id, total_day: totalDay, leave_id})
+          : navigation.navigate('leaveRequestForm', {
+              leave_id: leave_id,
+              id: id,
+              isEdit: true,
+            })
       }>
       <View style={styles.rowWrapper}>
         <View style={styles.leftBox}>
@@ -213,18 +240,28 @@ const Item = ({setShowAll,showAll,selectedItems,toggleSelection,title, status, f
               styles.statusCircle,
               {backgroundColor: statusbyManager === 1 ? '#43A047' : '#a7e34d'},
             ]}>
-            <Text style={styles.circleText}>{statusbyManager === 1 ? 'A' : 'P'}</Text>
+            <Text style={styles.circleText}>
+              {statusbyManager === 1 ? 'A' : 'P'}
+            </Text>
           </View>
           <View>
             <Text style={styles.title}>{title}</Text>
-            <Text style={styles.dateText}>{from_date} - {to_date}</Text>
+            <Text style={styles.dateText}>
+              {from_date} - {to_date}
+            </Text>
           </View>
         </View>
 
         <View style={styles.rightBox}>
-        <Text style={[styles.title,{fontSize:scaleFontSize(12),color:"#000"}]}>{`(Total Day - ${totalDay}) ${leave_type_name}`}</Text>
-        </View> 
+          {user_info.approved_person === 1 &&
+          (<Text style={[styles.title]}>{name}</Text>)}
 
+          <Text
+            style={[
+              styles.title,
+              {fontSize: scaleFontSize(12), color: '#000'},
+            ]}>{`(Total Day - ${totalDay}) ${leave_type_name}`}</Text>
+        </View>
       </View>
     </TouchableOpacity>
   </View>
@@ -250,7 +287,7 @@ const styles = StyleSheet.create({
     color: '#8bc34a',
   },
   statusCircle: {
-    alignItems:"center",
+    alignItems: 'center',
     justifyContent: 'center',
     // padding: horizontalScale(10),
     width: 45,
@@ -269,8 +306,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  leftBox:{
-    flexDirection:"row",
+  leftBox: {
+    flexDirection: 'row',
     alignItems: 'center',
-  }
+  },
 });
