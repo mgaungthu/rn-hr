@@ -95,6 +95,7 @@ const AtdRequest = ({route, navigation, navigation: {setParams}}) => {
 
   const callAttendanceRequestList = () => {
     if (user_info.approved_person) {
+
       callAttendanceRequestAll(access_token)
         .then(response => {
           if (response.status) {

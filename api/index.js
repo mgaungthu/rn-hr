@@ -160,10 +160,10 @@ export const callAttendanceRequestList = async (access_token, id = null,approve 
           headers: config,
         },
       );
+     
       trasnformed = transformArray(response.data.attendanceRequest);
     }
 
-    
     return {
       status: true,
       data: trasnformed,
@@ -180,11 +180,11 @@ export const callAttendanceRequestAll = async access_token => {
   const config = {Authorization: 'Bearer ' + access_token};
 
   try {
+   
     const response = await axios.get(API_URL + 'user/attendance_request_all', {
       headers: config,
     });
-
-   
+    
     const trasnformed = transformArray(response.data.attendanceRequestlists);
 
     return {
@@ -192,6 +192,7 @@ export const callAttendanceRequestAll = async access_token => {
       data: trasnformed,
     };
   } catch (error) {
+    
     return {
       status: false,
       data: null,

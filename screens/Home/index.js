@@ -143,8 +143,9 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
           ],
         );
       } else {
-        dispatch(checkInStatus({time: '00:00', status: false}));
-        dispatch(checkOutStatus({time: '00:00', status: false}));
+        // dispatch(checkInStatus({time: '00:00', status: false}));
+        // dispatch(checkOutStatus({time: '00:00', status: false}));
+        alert("Network conntection error")
       }
     }
   };
