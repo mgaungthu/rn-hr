@@ -5,6 +5,7 @@ import {
   SafeAreaView,
   PermissionsAndroid,
   Alert,
+  Pressable,
 } from 'react-native';
 import {launchCamera} from 'react-native-image-picker';
 import Geolocation from '@react-native-community/geolocation';
@@ -13,6 +14,7 @@ import {useSelector, useDispatch} from 'react-redux';
 import {
   checkInStatus,
   checkOutStatus,
+
 } from '../../redux/reducers/CheckInOutStatus';
 import {checkInOutApi} from '../../api';
 
@@ -22,6 +24,7 @@ import CheckInOutBtn from './components/CheckInOutBtn';
 import styles from './styles';
 import LoadingScreen from '../../components/LoadingScreen';
 import {distance, getCompare} from '../../assets/utils';
+
 
 const requestLocationPermission = async () => {
   try {
@@ -55,7 +58,6 @@ const CheckInOut = ({navigation}) => {
   const [loading, setLoading] = useState(false);
   const [isDisabled, setDisabled] = useState(true);
 
-  
   const [checkInOut, setCheckInOut] = useState(false);
   const {access_token, user_info} = useSelector(state => state.user);
   const {CheckIn} = useSelector(state => state.checkinout);
@@ -78,7 +80,6 @@ const CheckInOut = ({navigation}) => {
       return currentDate.toLocaleDateString('en-US', options);
     };
 
-
     // Set the initial formatted date
     setFormattedDate(getFormattedDate());
 
@@ -94,7 +95,10 @@ const CheckInOut = ({navigation}) => {
       setModalVisible(false);
     }, 3000);
 
-    return () => timeout;
+    return () => {
+      clearTimeout(timeout);
+      setLatLong([]);
+    };
   }, [isModalVisible]);
 
   const options = {
@@ -127,10 +131,9 @@ const CheckInOut = ({navigation}) => {
   };
 
   const callCamera = async () => {
-
-    if(isDisabled) { 
-      alert("Open GPS to Check in/out")
-      return false
+    if (isDisabled) {
+      alert('Open GPS to Check in/out');
+      return false;
     }
 
     if (!user_info.camera_allow) {
@@ -172,15 +175,13 @@ const CheckInOut = ({navigation}) => {
     const range = distance(
       user_info.location.latitude,
       user_info.location.longitude,
+
       latLong[1],
       latLong[0],
+      'N',
     );
 
-    // console.log(range > 0.1)
-
-   
-
-    if (!user_info.location_allow && range > 0.03) {
+    if (!user_info.location_allow && range > 0.073) {
       setLoading(false);
       setMessage('Out of Office`s location');
       setModalVisible(true);
@@ -205,10 +206,10 @@ const CheckInOut = ({navigation}) => {
         checkInOut,
       );
       if (response.status) {
-        if (CheckIn.status || CheckInOut) {
-          dispatch(checkOutStatus({time: response.time, status: true}));
-        } else {
+        if (!CheckIn.status || !CheckInOut) {
           dispatch(checkInStatus({time: response.time, status: true}));
+        } else {
+          dispatch(checkOutStatus({time: response.time, status: true}));
         }
         setLoading(false);
 
@@ -235,7 +236,7 @@ const CheckInOut = ({navigation}) => {
           Geolocation.getCurrentPosition(
             position => {
               setLatLong([position.coords.longitude, position.coords.latitude]);
-              setDisabled(false)
+              setDisabled(false);
             },
             error => {
               // if (!user_info.location_allow) {
@@ -244,20 +245,20 @@ const CheckInOut = ({navigation}) => {
               // }
             },
           );
-
-
         } else {
           setLatLong([]);
         }
-
-
-
       },
       error => {
         console.log(error.code);
         alert('you cannot use geolocation');
       },
-      {enableHighAccuracy: true, timeout: 30000, maximumAge: 1000},
+      {
+        enableHighAccuracy: true,
+        timeout: 30000,
+        maximumAge: 1000,
+        forceRequestLocation: true,
+      },
     );
   };
 
@@ -272,7 +273,11 @@ const CheckInOut = ({navigation}) => {
       </View>
       <View style={styles.container}>
         {loading && <LoadingScreen />}
-        <MapView latLong={latLong} getDeviceLocation={getDeviceLocation} />
+        <MapView
+          latLong={latLong}
+          getDeviceLocation={getDeviceLocation}
+          user_info={user_info}
+        />
         <View style={styles.secWrapper}>
           <View>
             <Text style={styles.checkIntext}>
@@ -290,14 +295,16 @@ const CheckInOut = ({navigation}) => {
           </View>
 
           <CheckInOutBtn
-          isDisabled={isDisabled}
+            isDisabled={isDisabled}
             callCamera={callCamera}
             CheckIn={CheckIn}
             checkInOut={checkInOut}
           />
 
           <View>
-            <Text style={styles.shiftText}>Open gps to check in/out</Text>
+            <Pressable onPress={() => getDeviceLocation()}>
+              <Text style={styles.shiftText}>Open gps to check in/out</Text>
+            </Pressable>
           </View>
         </View>
       </View>

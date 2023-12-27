@@ -1,7 +1,7 @@
 import axios from 'axios';
 import {readFile} from 'react-native-fs';
 
-// const API_URL = 'http://10.10.18.22/hrms/public/api/';
+// const API_URL = 'http://10.10.18.14/hrms/public/api/';
 const API_URL = 'https://soloversion.com/api/';
 
 export const LoginUser = async data => {
@@ -86,7 +86,7 @@ export const checkInOutApi = async (
     // console.log(datalist);
 
     response = await axios.post(API_URL + 'user/attendance', datalist, config);
-    
+    // console.log(response)
 
     return {
       status: true,
@@ -122,9 +122,11 @@ export const callCheckInOutInfo = async access_token => {
       data: response.data.todayOfficeShift,
     };
   } catch (error) {
+
+    // console.log(error.response.status)
     return {
       status: false,
-      data: null,
+      data: error.response.status,
     };
   }
 };
@@ -634,7 +636,7 @@ export const callCheckInOutList = async access_token => {
     };
   } catch (error) {
 
-    console.log(error)
+    
     return {
       status: false,
       data: null,

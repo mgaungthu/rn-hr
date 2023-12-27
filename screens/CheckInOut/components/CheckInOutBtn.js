@@ -4,7 +4,6 @@ import styles from '../styles';
 import {getCompare} from '../../../assets/utils';
 
 const CheckInOutBtn = ({callCamera, CheckIn, checkInOut, isDisabled}) => {
-  // console.log(checkInOut)
 
   if (CheckIn.status || checkInOut) {
     return (

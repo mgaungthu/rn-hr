@@ -16,16 +16,17 @@ MapboxGL.setAccessToken(arrayToken[randomIndex]);
 
 
 
-const MapView = ({getDeviceLocation, latLong}) => {
+const MapView = ({getDeviceLocation, latLong,user_info}) => {
 
 
   // keepToken(accessToken)
   const createGeoJSONCircle = function (center, radiusInKm, points) {
     if (!points) points = 64;
 
+
     var coords = {
-      latitude: center[1],
-      longitude: center[0],
+      latitude: parseFloat(center[1]),
+      longitude: parseFloat(center[0]),
     };
 
     var km = radiusInKm;
@@ -55,11 +56,13 @@ const MapView = ({getDeviceLocation, latLong}) => {
         properties: {},
         geometry: {
           type: 'Polygon',
-          coordinates: createGeoJSONCircle([96.129173, 16.8161807], 0.1),
+          coordinates: createGeoJSONCircle([user_info.location.longitude, user_info.location.latitude], 0.1),
         },
       },
     ],
   };
+
+  // console.log(user_info.location.latitude) 
 
   return (
     <MapboxGL.MapView

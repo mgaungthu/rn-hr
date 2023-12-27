@@ -1,21 +1,16 @@
 import React, {useEffect, useState} from 'react';
-import { Linking, Platform, Alert } from 'react-native';
+import {Linking, Platform, Alert} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {Provider} from 'react-redux';
-import { PersistGate } from 'redux-persist/integration/react';
+import {PersistGate} from 'redux-persist/integration/react';
 import VersionCheck from 'react-native-version-check';
 
-import store, { persistor } from './redux/store';
+import store, {persistor} from './redux/store';
 import RootNavigation from './navigation/RootNavigation';
-import { SelectContextProvider } from './screens/RequestTabPage/SelectContext';
+import {SelectContextProvider} from './screens/RequestTabPage/SelectContext';
 import BubbleAnimation from './components/BubbleAnimation';
 
-
-
-
-
 const App = () => {
-
   useEffect(() => {
     const checkAppVersion = async () => {
       try {
@@ -34,19 +29,17 @@ const App = () => {
               {
                 text: 'Update Now',
                 onPress: () => {
-                  
-                    VersionCheck.needUpdate()
-                    .then(async res => {
-                      // console.log(res.isNeeded);    // true
-                      if (res.isNeeded) {
-                        // console.log(res.storeUrl)
-                        Linking.openURL(res.storeUrl);  // open store if update is needed.
-                      }
-                    })
+                  VersionCheck.needUpdate().then(async res => {
+                    // console.log(res.isNeeded);    // true
+                    if (res.isNeeded) {
+                      // console.log(res.storeUrl)
+                      Linking.openURL(res.storeUrl); // open store if update is needed.
+                    }
+                  });
                 },
               },
             ],
-            { cancelable: false }
+            {cancelable: false},
           );
         } else {
           // App is up-to-date, proceed with the app
@@ -60,17 +53,16 @@ const App = () => {
     checkAppVersion();
   }, []);
 
-  
   return (
     <Provider store={store}>
       <PersistGate persistor={persistor} loading={null}>
-      <SelectContextProvider>
-      <NavigationContainer>
-      <BubbleAnimation>
-        <RootNavigation/>
-      </BubbleAnimation>
-      </NavigationContainer>
-      </SelectContextProvider>
+        <SelectContextProvider>
+          <NavigationContainer>
+            <BubbleAnimation>
+              <RootNavigation />
+            </BubbleAnimation>
+          </NavigationContainer>
+        </SelectContextProvider>
       </PersistGate>
     </Provider>
   );
