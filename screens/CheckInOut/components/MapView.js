@@ -1,7 +1,7 @@
-import React from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {View, StyleSheet} from 'react-native';
 import MapboxGL from '@rnmapbox/maps';
-import { keepToken } from '../../../api';
+import {keepToken} from '../../../api';
 
 const arrayToken = [
   'pk.eyJ1IjoiYXVuZ3RodTIiLCJhIjoiY2xkeTVjdjF0MDBobTNwbXZrZmVpa2w3dCJ9.Pvtw_NER5ewgMH8Eldd44w',
@@ -13,17 +13,10 @@ const randomIndex = Math.floor(Math.random() * arrayToken.length);
 
 MapboxGL.setAccessToken(arrayToken[randomIndex]);
 
-
-
-
-const MapView = ({getDeviceLocation, latLong,user_info}) => {
-
-
+const MapView = ({latLong, getDeviceLocation, user_info}) => {
   // keepToken(accessToken)
-  const createGeoJSONCircle = function (center, radiusInKm, points) {
+  const createGeoJSONCircle = useCallback((center, radiusInKm, points) => {
     if (!points) points = 64;
-
-
     var coords = {
       latitude: parseFloat(center[1]),
       longitude: parseFloat(center[0]),
@@ -46,23 +39,49 @@ const MapView = ({getDeviceLocation, latLong,user_info}) => {
     ret.push(ret[0]);
 
     return [ret];
-  };
+  }, []);
 
-  const shape = {
-    type: 'FeatureCollection',
-    features: [
-      {
-        type: 'Feature',
-        properties: {},
-        geometry: {
-          type: 'Polygon',
-          coordinates: createGeoJSONCircle([user_info.location.longitude, user_info.location.latitude], 0.1),
+  const shape = useMemo(() => {
+    // console.log('Calculating shape...'); // Add this log
+    return {
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          properties: {},
+          geometry: {
+            type: 'Polygon',
+            coordinates: createGeoJSONCircle(
+              [user_info.location.longitude, user_info.location.latitude],
+              0.1,
+            ),
+          },
         },
-      },
-    ],
-  };
+      ],
+    };
+  }, [
+    createGeoJSONCircle,
+    user_info.location.longitude,
+    user_info.location.latitude,
+  ]);
 
-  // console.log(user_info.location.latitude) 
+  const MapViewWrapper = useMemo(() => {
+    if (latLong.length > 0) {
+      return (
+        <View>
+          <MapboxGL.Camera
+            centerCoordinate={latLong}
+            zoomLevel={15}
+            animationMode="flyTo"
+            animationDuration={2000}
+            UserTrackingMode={true}
+          />
+          <MapboxGL.UserLocation showsUserHeadingIndicator={true} />
+        </View>
+      );
+    }
+    return null;
+  }, [latLong]);
 
   return (
     <MapboxGL.MapView
@@ -80,23 +99,12 @@ const MapView = ({getDeviceLocation, latLong,user_info}) => {
         />
       </MapboxGL.ShapeSource>
 
-      {latLong.length > 0 && (
-        <View>
-          <MapboxGL.Camera
-            centerCoordinate={latLong}
-            zoomLevel={15}
-            animationMode="flyTo"
-            animationDuration={2000}
-            UserTrackingMode={true}
-          />
-          <MapboxGL.UserLocation showsUserHeadingIndicator={true} />
-        </View>
-      )}
+      {MapViewWrapper}
     </MapboxGL.MapView>
   );
 };
 
-export default MapView;
+export default React.memo(MapView);
 
 const styles = StyleSheet.create({
   container: {

@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useCallback} from 'react';
+import React, {useEffect, useState, useCallback, useMemo} from 'react';
 import {
   ImageBackground,
   Image,
@@ -72,6 +72,9 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
       }
     }, []),
   );
+
+  const getFormattedDateMemoized = useMemo(() => getFormattedDate(), []);
+  
 
   useEffect(() => {
     // toggleModal();
@@ -278,7 +281,7 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
                   {user_info.shift.name}
                 </Text>
                 <Text style={{fontSize: scaleFontSize(14), color: '#fff'}}>
-                  {getFormattedDate()}
+                  {getFormattedDateMemoized}
                 </Text>
               </View>
 

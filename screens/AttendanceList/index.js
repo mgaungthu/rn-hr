@@ -51,8 +51,11 @@ const AttendanceList = () => {
 };
 
 
+
+
 const Item = ({checkInTime, checkOutTime, date, timeInStatus}) => (
   <View style={styles.item}>
+    
     <View style={[styles.rowWrapper,{backgroundColor: timeInStatus ? '#F6F1F1' : "#fff"}]}>
       <View>
         <View style={styles.leftBox}>

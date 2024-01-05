@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useMemo, useCallback} from 'react';
 import {
   View,
   Text,
@@ -62,30 +62,30 @@ const CheckInOut = ({navigation}) => {
   const {access_token, user_info} = useSelector(state => state.user);
   const {CheckIn} = useSelector(state => state.checkinout);
 
-  const [formattedDate, setFormattedDate] = useState('');
+  // const [formattedDate, setFormattedDate] = useState('');
 
   const dispatch = useDispatch();
 
   useEffect(() => {
     // Function to get the formatted date
-    const getFormattedDate = () => {
-      const options = {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      };
+    // const getFormattedDate = () => {
+    //   const options = {
+    //     weekday: 'long',
+    //     day: 'numeric',
+    //     month: 'short',
+    //     year: 'numeric',
+    //   };
 
-      const currentDate = new Date();
-      return currentDate.toLocaleDateString('en-US', options);
-    };
+    //   const currentDate = new Date();
+    //   return currentDate.toLocaleDateString('en-US', options);
+    // };
 
     // Set the initial formatted date
-    setFormattedDate(getFormattedDate());
+    // setFormattedDate(getFormattedDate());
 
-    setCheckInOut(
-      getCompare(getCurrentTimeFormatted(), user_info.shift.cutoff_time),
-    );
+    // setCheckInOut(
+    //   getCompare(getCurrentTimeFormatted(), user_info.shift.cutoff_time),
+    // );
 
     const result = requestLocationPermission();
 
@@ -100,6 +100,38 @@ const CheckInOut = ({navigation}) => {
       setLatLong([]);
     };
   }, [isModalVisible]);
+
+
+  const checkInOutStatus = useMemo(() => {
+
+    const getCurrentTimeFormatted = () => {
+      const currentDate = new Date();
+  
+      let hours = currentDate.getHours();
+      const minutes = currentDate.getMinutes();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+  
+      // Convert hours to 12-hour format
+      hours = hours % 12 || 12;
+  
+      return `${hours}:${minutes < 10 ? '0' : ''}${minutes} ${ampm}`;
+    };
+
+    return getCompare(getCurrentTimeFormatted(), user_info.shift.cutoff_time);
+  }, [user_info.shift.cutoff_time]);
+
+
+  const formattedDate = useMemo(() => {
+    const options = {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    };
+
+    const currentDate = new Date();
+    return currentDate.toLocaleDateString('en-US', options);
+  }, []);
 
   const options = {
     saveToPhotos: false,
@@ -158,18 +190,7 @@ const CheckInOut = ({navigation}) => {
     }
   };
 
-  const getCurrentTimeFormatted = () => {
-    const currentDate = new Date();
 
-    let hours = currentDate.getHours();
-    const minutes = currentDate.getMinutes();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-
-    // Convert hours to 12-hour format
-    hours = hours % 12 || 12;
-
-    return `${hours}:${minutes < 10 ? '0' : ''}${minutes} ${ampm}`;
-  };
 
   const callCheckInOut = async imgUri => {
     const range = distance(
@@ -229,7 +250,7 @@ const CheckInOut = ({navigation}) => {
     }
   };
 
-  const getDeviceLocation = () => {
+const getDeviceLocation = useCallback(() => {
     Geolocation.requestAuthorization(
       () => {
         if (latLong.length === 0) {
@@ -239,10 +260,7 @@ const CheckInOut = ({navigation}) => {
               setDisabled(false);
             },
             error => {
-              // if (!user_info.location_allow) {
-              // See error code charts below.
               alert('Please open gps to use map');
-              // }
             },
           );
         } else {
@@ -251,7 +269,7 @@ const CheckInOut = ({navigation}) => {
       },
       error => {
         console.log(error.code);
-        alert('you cannot use geolocation');
+        alert('You cannot use geolocation');
       },
       {
         enableHighAccuracy: true,
@@ -260,7 +278,9 @@ const CheckInOut = ({navigation}) => {
         forceRequestLocation: true,
       },
     );
-  };
+  }, [latLong]);
+
+ 
 
   return (
     <SafeAreaView>
@@ -298,7 +318,7 @@ const CheckInOut = ({navigation}) => {
             isDisabled={isDisabled}
             callCamera={callCamera}
             CheckIn={CheckIn}
-            checkInOut={checkInOut}
+            checkInOut={checkInOutStatus}
           />
 
           <View>
