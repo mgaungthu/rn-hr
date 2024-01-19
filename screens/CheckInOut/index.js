@@ -10,12 +10,7 @@ import {
 import {launchCamera} from 'react-native-image-picker';
 import Geolocation from '@react-native-community/geolocation';
 import ClockText from './components/ClockText';
-import {useSelector, useDispatch} from 'react-redux';
-import {
-  checkInStatus,
-  checkOutStatus,
-
-} from '../../redux/reducers/CheckInOutStatus';
+import {useSelector} from 'react-redux';
 import {checkInOutApi} from '../../api';
 
 import CustomModal from '../../components/CustomModel';
@@ -24,7 +19,6 @@ import CheckInOutBtn from './components/CheckInOutBtn';
 import styles from './styles';
 import LoadingScreen from '../../components/LoadingScreen';
 import {distance, getCompare} from '../../assets/utils';
-
 
 const requestLocationPermission = async () => {
   try {
@@ -64,30 +58,12 @@ const CheckInOut = ({navigation}) => {
 
   // const [formattedDate, setFormattedDate] = useState('');
 
-  const dispatch = useDispatch();
-
   useEffect(() => {
-    // Function to get the formatted date
-    // const getFormattedDate = () => {
-    //   const options = {
-    //     weekday: 'long',
-    //     day: 'numeric',
-    //     month: 'short',
-    //     year: 'numeric',
-    //   };
 
-    //   const currentDate = new Date();
-    //   return currentDate.toLocaleDateString('en-US', options);
-    // };
 
-    // Set the initial formatted date
-    // setFormattedDate(getFormattedDate());
-
-    // setCheckInOut(
-    //   getCompare(getCurrentTimeFormatted(), user_info.shift.cutoff_time),
-    // );
-
+    setCheckInOut(getCompare(getCurrentTimeFormatted(), user_info.shift.cutoff_time))
     const result = requestLocationPermission();
+
 
     if (result) getDeviceLocation();
 
@@ -101,25 +77,37 @@ const CheckInOut = ({navigation}) => {
     };
   }, [isModalVisible]);
 
+  const getCurrentTimeFormatted = () => {
+    const currentDate = new Date();
+
+    let hours = currentDate.getHours();
+    const minutes = currentDate.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+
+    // Convert hours to 12-hour format
+    hours = hours % 12 || 12;
+
+    return `${hours}:${minutes < 10 ? '0' : ''}${minutes} ${ampm}`;
+  };
 
   const checkInOutStatus = useMemo(() => {
-
     const getCurrentTimeFormatted = () => {
       const currentDate = new Date();
-  
+
       let hours = currentDate.getHours();
       const minutes = currentDate.getMinutes();
       const ampm = hours >= 12 ? 'PM' : 'AM';
-  
+
       // Convert hours to 12-hour format
       hours = hours % 12 || 12;
-  
+
       return `${hours}:${minutes < 10 ? '0' : ''}${minutes} ${ampm}`;
     };
 
     return getCompare(getCurrentTimeFormatted(), user_info.shift.cutoff_time);
   }, [user_info.shift.cutoff_time]);
 
+ 
 
   const formattedDate = useMemo(() => {
     const options = {
@@ -190,8 +178,6 @@ const CheckInOut = ({navigation}) => {
     }
   };
 
-
-
   const callCheckInOut = async imgUri => {
     const range = distance(
       user_info.location.latitude,
@@ -227,11 +213,6 @@ const CheckInOut = ({navigation}) => {
         checkInOut,
       );
       if (response.status) {
-        if (!CheckIn.status || !CheckInOut) {
-          dispatch(checkInStatus({time: response.time, status: true}));
-        } else {
-          dispatch(checkOutStatus({time: response.time, status: true}));
-        }
         setLoading(false);
 
         navigation.navigate('home', {
@@ -244,43 +225,35 @@ const CheckInOut = ({navigation}) => {
         setModalVisible(true);
       }
     } catch (error) {
+      console.log(error);
       setLoading(false);
       setMessage('Internet Connection Error');
       setModalVisible(true);
     }
   };
 
-const getDeviceLocation = useCallback(() => {
-    Geolocation.requestAuthorization(
-      () => {
-        if (latLong.length === 0) {
-          Geolocation.getCurrentPosition(
-            position => {
-              setLatLong([position.coords.longitude, position.coords.latitude]);
-              setDisabled(false);
-            },
-            error => {
-              alert('Please open gps to use map');
-            },
-          );
-        } else {
-          setLatLong([]);
-        }
-      },
-      error => {
-        console.log(error.code);
-        alert('You cannot use geolocation');
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 30000,
-        maximumAge: 1000,
-        forceRequestLocation: true,
-      },
-    );
-  }, [latLong]);
+  const getDeviceLocation = useCallback(() => {
 
- 
+    if (latLong.length === 0) {
+      Geolocation.getCurrentPosition(
+        position => {
+          setLatLong([position.coords.longitude, position.coords.latitude]);
+          setDisabled(false);
+        },
+        error => {
+          console.log(error);
+          alert('Please open gps to use map');
+        },
+        {
+          enableHighAccuracy: false,
+          timeout: 60000,
+          // maximumAge: 1000,
+        },
+      );
+    } else {
+      setLatLong([]);
+    }
+  }, [latLong]);
 
   return (
     <SafeAreaView>

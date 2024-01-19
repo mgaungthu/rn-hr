@@ -111,46 +111,53 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
     }
   }, [route.params?.showModal, refreshing]);
 
-  const callCheckInOutInfo = async () => {
-    const response = await InfoApi(access_token);
-    if (response.status && response.data) {
-      const {check_in_time, check_out_time} = response.data;
-      dispatch(
-        checkInStatus({
-          time: check_in_time || '00:00',
-          status: check_in_time ? true : false,
-        }),
-      );
-      dispatch(
-        checkOutStatus({
-          time: check_out_time || '00:00',
-          status: check_out_time ? true : false,
-        }),
-      );
-    } else {
-      if (response.data === 401) {
-        Alert.alert(
-          'Please login again',
-          'Your session has expired. Please log in again.',
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                dispatch(resetUser());
-                dispatch(resetApprove());
-                dispatch(resetLeaveApprove());
-                dispatch(resetcheckInOutStatus());
-                navigation.navigate('login'); 
-              },
-            },
-          ],
-        );
-      } else {
-        // dispatch(checkInStatus({time: '00:00', status: false}));
-        // dispatch(checkOutStatus({time: '00:00', status: false}));
-        alert("Network conntection error")
+  const callCheckInOutInfo =  () => {
+    InfoApi(access_token).then(
+      response => {
+        if (response.status && response.data) {
+          const {check_in_time, check_out_time} = response.data;
+          dispatch(
+            checkInStatus({
+              time: check_in_time || '00:00',
+              status: check_in_time ? true : false,
+            }),
+          );
+          dispatch(
+            checkOutStatus({
+              time: check_out_time || '00:00',
+              status: check_out_time ? true : false,
+            }),
+          );
+        } else {
+          if (response.data === 401) {
+            Alert.alert(
+              'Please login again',
+              'Your session has expired. Please log in again.',
+              [
+                {
+                  text: 'OK',
+                  onPress: () => {
+                    dispatch(resetUser());
+                    dispatch(resetApprove());
+                    dispatch(resetLeaveApprove());
+                    dispatch(resetcheckInOutStatus());
+                    navigation.navigate('login'); 
+                  },
+                },
+              ],
+            );
+          } else {
+            dispatch(checkInStatus({time: '00:00', status: false}));
+            dispatch(checkOutStatus({time: '00:00', status: false}));
+            // alert("Network conntection error")
+          }
+        }
       }
-    }
+    ).catch(error => {
+      // console.log(error)
+      alert("Network conntection error")
+      setLoading(false);
+    });
   };
 
   const getCheckInOutList = () => {
@@ -160,6 +167,7 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
         setLoading(false);
       })
       .catch(error => {
+        // console.log(error)
         setLoading(false);
       });
   };

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import {readFile} from 'react-native-fs';
 
-// const API_URL = 'http://10.10.18.14/hrms/public/api/';
+// const API_URL = 'http://10.10.18.18/hrms/public/api/';
 const API_URL = 'https://soloversion.com/api/';
 
 export const LoginUser = async data => {
@@ -60,12 +60,10 @@ export const checkInOutApi = async (
       employee_id: id,
       type: checkInStatus || checkInOut ? 'check-out' : 'check-in',
       date: curDate, //    time = today.getHours() + ':' + today.getMinutes() + ':' + today.getSeconds();
-      checkIntime: checkInStatus
-        ? '-'
-        : ('0' + h).substr(-2) + ':' + ('0' + m).substr(-2) + ampm,
-      checkOuttime: !checkInStatus
-        ? '-'
-        : ('0' + h).substr(-2) + ':' + ('0' + m).substr(-2) + ampm,
+      checkIntime: ('0' + h).substr(-2) + ':' + ('0' + m).substr(-2) + ampm,
+      checkOuttime: checkInStatus || checkInOut
+        ? ('0' + h).substr(-2) + ':' + ('0' + m).substr(-2) + ampm
+        : '-',
       in_image: checkInStatus || checkInOut ? 'check-out' : base64Image,
       latitude: latLong[1] || null,
       longitude: latLong[0] || null,
@@ -184,8 +182,12 @@ export const callAttendanceRequestAll = async access_token => {
     const response = await axios.get(API_URL + 'user/attendance_request_all', {
       headers: config,
     });
+
+   
     
     const trasnformed = transformArray(response.data.attendanceRequestlists);
+
+   
 
     return {
       status: true,
@@ -457,6 +459,8 @@ export const callLeaveHistoryAll = async (access_token) => {
       const response = await axios.get(API_URL + 'user/leave_request_all', {
         headers: config,
       });
+
+      
       const leaveRequestList = response.data.leaveRequestList.map(
         ({
           id,
@@ -480,12 +484,15 @@ export const callLeaveHistoryAll = async (access_token) => {
         }),
       );
 
+      
+
       return {
         status: true,
         data: leaveRequestList,
       };
     
   } catch (error) {
+    console.log(error)
     return {
       status: false,
       data: null,
