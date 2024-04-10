@@ -5,6 +5,11 @@ import Home from '../screens/Home';
 import CheckInOut from '../screens/CheckInOut';
 import Login from '../screens/Login';
 import RequestTabPage from '../screens/RequestTabPage';
+import ApproveTab from '../screens/ApproveTab'
+import AttandanceApprove from '../screens/ApproveTab/AttandanceApprove'
+import LeaveApprove from '../screens/ApproveTab/LeaveApprove';
+import OtApprove from '../screens/ApproveTab/OtApprove';
+
 import AtdRequest from '../screens/RequestTabPage/AtdRequest';
 import LeaveRequest from '../screens/RequestTabPage/LeaveRequest';
 import OtRequest from '../screens/RequestTabPage/OtRequest';
@@ -98,7 +103,7 @@ const CustomTabBar = ({state, descriptors, navigation}) => {
             ]}>
             <Text style={[styles.tabText, isFocused && styles.activeTabText]}>
               {label}
-              {route.name === 'atd-req' &&
+              {route.name === 'atd-approve' &&
                 unapprovedRequestsCount > 0 &&
                 user_info.approved_person === 1 && (
                   <Text style={styles.countText}>
@@ -106,7 +111,7 @@ const CustomTabBar = ({state, descriptors, navigation}) => {
                     ({unapprovedRequestsCount})
                   </Text>
                 )}
-              {route.name === 'leaverequest' &&
+              {route.name === 'leaveapprove' &&
                 unapprovedLeaveCount > 0 &&
                 user_info.approved_person === 1 && (
                   <Text style={styles.countText}>
@@ -122,10 +127,70 @@ const CustomTabBar = ({state, descriptors, navigation}) => {
   );
 };
 
+
+const CustomRequestTabBar = ({state, descriptors, navigation}) => {
+
+
+  return (
+    <View style={styles.tabBarContainer}>
+      {state.routes.map((route, index) => {
+        const {options} = descriptors[route.key];
+        const label =
+          options.tabBarLabel !== undefined
+            ? options.tabBarLabel
+            : options.title !== undefined
+            ? options.title
+            : route.name;
+
+        const isFocused = state.index === index;
+
+        const onPress = () => {
+          const event = navigation.emit({
+            type: 'tabPress',
+            target: route.key,
+          });
+
+          if (!isFocused && !event.defaultPrevented) {
+            navigation.navigate(route.name);
+          }
+        };
+
+        const onLongPress = () => {
+          navigation.emit({
+            type: 'tabLongPress',
+            target: route.key,
+          });
+        };
+
+        return (
+          <TouchableOpacity
+            key={index}
+            accessibilityRole="button"
+            accessibilityState={isFocused ? {selected: true} : {}}
+            accessibilityLabel={options.tabBarAccessibilityLabel}
+            testID={options.tabBarTestID}
+            onPress={onPress}
+            onLongPress={onLongPress}
+            style={[
+              styles.tabItem,
+              {backgroundColor: isFocused ? 'orange' : 'transparent'},
+              isFocused && styles.activeTab,
+            ]}>
+            <Text style={[styles.tabText, isFocused && styles.activeTabText]}>
+              {label}
+            
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+};
+
 export const RequestTabNavigation = () => {
   return (
     <RequestTab.Navigator
-      tabBar={props => <CustomTabBar {...props} />}
+      tabBar={props => <CustomRequestTabBar {...props} />}
       screenOptions={{
         tabBarStyle: {backgroundColor: '#206aed'},
         tabBarActiveTintColor: '#ff3636',
@@ -148,6 +213,39 @@ export const RequestTabNavigation = () => {
       <RequestTab.Screen
         name={'otrequest'}
         component={OtRequest}
+        options={{tabBarLabel: 'Overtime'}}
+      />
+    </RequestTab.Navigator>
+  );
+};
+
+
+export const ApproveTabNavigation = () => {
+  return (
+    <RequestTab.Navigator
+      tabBar={props => <CustomTabBar {...props} />}
+      screenOptions={{
+        tabBarStyle: {backgroundColor: '#206aed'},
+        tabBarActiveTintColor: '#ff3636',
+        tabBarLabelStyle: {fontSize: 14, fontWeight: 500},
+        tabBarInactiveTintColor: '#fff',
+        tabBarIndicatorStyle: {backgroundColor: '#ff3636'},
+        tabBarPressColor: '#ddd',
+        tabBarPressOpacity: false,
+      }}>
+      <RequestTab.Screen
+        name={'atd-approve'}
+        component={AttandanceApprove}
+        options={{tabBarLabel: 'Attandance'}}
+      />
+      <RequestTab.Screen
+        name={'leaveapprove'}
+        component={LeaveApprove}
+        options={{tabBarLabel: 'Leave'}}
+      />
+      <RequestTab.Screen
+        name={'otapprove'}
+        component={OtApprove}
         options={{tabBarLabel: 'Overtime'}}
       />
     </RequestTab.Navigator>
@@ -213,6 +311,20 @@ export const Authenticated = () => {
       <Stack.Screen
         name={'requesttabpage'}
         component={RequestTabPage}
+        options={({navigation, route}) => ({
+          headerShown: true,
+          title: 'Request',
+          headerStyle: {
+            backgroundColor: '#206aed',
+          },
+          headerTintColor: '#fff',
+          // headerRight: () => <Button title="Update count" />,
+        })}
+      />
+
+  <Stack.Screen
+        name={'approvetab'}
+        component={ApproveTab}
         options={({navigation, route}) => ({
           headerShown: true,
           title: 'Request',

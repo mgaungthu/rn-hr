@@ -7,7 +7,8 @@ import VersionCheck from 'react-native-version-check';
 
 import store, {persistor} from './redux/store';
 import RootNavigation from './navigation/RootNavigation';
-import {SelectContextProvider} from './screens/RequestTabPage/SelectContext';
+import {SelectContextProvider} from './screens/ApproveTab/SelectContext';
+import { SelectContextProvider as Context } from './screens/RequestTabPage/SelectContext';
 import BubbleAnimation from './components/BubbleAnimation';
 
 const App = () => {
@@ -57,11 +58,13 @@ const App = () => {
     <Provider store={store}>
       <PersistGate persistor={persistor} loading={null}>
         <SelectContextProvider>
+          <Context>
           <NavigationContainer>
             <BubbleAnimation>
               <RootNavigation />
             </BubbleAnimation>
           </NavigationContainer>
+          </Context>
         </SelectContextProvider>
       </PersistGate>
     </Provider>

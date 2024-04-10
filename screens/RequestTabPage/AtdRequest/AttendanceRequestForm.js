@@ -226,9 +226,9 @@ const AttendanceRequestForm = ({route, navigation}) => {
         
         <ActionTopRow handleFormSubmit={handleFormSubmit} navigation={navigation} title={'Attendance Request'}/>
         {/* {!editParams.isEdit &&  <Text style={styles.labelText}>Request By {requestByName}</Text>}  */}
-        {user_info.approved_person === 1 && requestByName && (
+        {/* {user_info.approved_person === 1 && requestByName && (
           <Text style={styles.labelText}>Request By {requestByName}</Text>
-        )}
+        )} */}
         
         <View>
           <Text style={styles.labelText}>Date</Text>

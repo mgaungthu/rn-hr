@@ -61,9 +61,10 @@ export const checkInOutApi = async (
       type: checkInStatus || checkInOut ? 'check-out' : 'check-in',
       date: curDate, //    time = today.getHours() + ':' + today.getMinutes() + ':' + today.getSeconds();
       checkIntime: ('0' + h).substr(-2) + ':' + ('0' + m).substr(-2) + ampm,
-      checkOuttime: checkInStatus || checkInOut
-        ? ('0' + h).substr(-2) + ':' + ('0' + m).substr(-2) + ampm
-        : '-',
+      checkOuttime:
+        checkInStatus || checkInOut
+          ? ('0' + h).substr(-2) + ':' + ('0' + m).substr(-2) + ampm
+          : '-',
       in_image: checkInStatus || checkInOut ? 'check-out' : base64Image,
       latitude: latLong[1] || null,
       longitude: latLong[0] || null,
@@ -120,7 +121,6 @@ export const callCheckInOutInfo = async access_token => {
       data: response.data.todayOfficeShift,
     };
   } catch (error) {
-
     // console.log(error.response.status)
     return {
       status: false,
@@ -129,26 +129,27 @@ export const callCheckInOutInfo = async access_token => {
   }
 };
 
-export const callAttendanceRequestList = async (access_token, id = null,approve = null) => {
+export const callAttendanceRequestList = async (
+  access_token,
+  id = null,
+  approve = null,
+) => {
   const config = {Authorization: 'Bearer ' + access_token};
 
   let response;
   let trasnformed;
-  
 
   try {
     if (!id) {
       response = await axios.get(API_URL + 'user/attendance_request_list', {
         headers: config,
       });
-      
-      if(approve === 1){
+
+      if (approve === 1) {
         trasnformed = transformArray(response.data.attendanceRequestlists);
-      }else {
+      } else {
         trasnformed = singleTransform(response.data.attendanceRequestlists);
       }
-     
-
     } else {
       response = await axios.get(
         API_URL +
@@ -158,7 +159,7 @@ export const callAttendanceRequestList = async (access_token, id = null,approve 
           headers: config,
         },
       );
-     
+
       trasnformed = transformArray(response.data.attendanceRequest);
     }
 
@@ -178,23 +179,17 @@ export const callAttendanceRequestAll = async access_token => {
   const config = {Authorization: 'Bearer ' + access_token};
 
   try {
-   
     const response = await axios.get(API_URL + 'user/attendance_request_all', {
       headers: config,
     });
 
-   
-    
     const trasnformed = transformArray(response.data.attendanceRequestlists);
-
-   
 
     return {
       status: true,
       data: trasnformed,
     };
   } catch (error) {
-    
     return {
       status: false,
       data: null,
@@ -202,7 +197,7 @@ export const callAttendanceRequestAll = async access_token => {
   }
 };
 
-function singleTransform(originalArray){
+function singleTransform(originalArray) {
   if (originalArray.length > 0) {
     return originalArray.map(item => ({
       id: item.id,
@@ -227,7 +222,7 @@ function transformArray(originalArray) {
   if (originalArray.length > 0) {
     return originalArray.map(item => ({
       id: item.id,
-      name:item.employee.name,
+      name: item.employee.name,
       status: item.statusby_manager,
       title: item.attendance_type.attendance_type_name,
       date: item.from_date,
@@ -237,7 +232,7 @@ function transformArray(originalArray) {
   const item = originalArray;
   return {
     id: item.id,
-    name:item.employee.name,
+    name: item.employee.name,
     status: item.statusby_manager,
     attendance_type_id: item.attendance_type_id,
     date: item.from_date,
@@ -326,10 +321,10 @@ export const DeleteAttendanceRequest = async (access_token, id) => {
   }
 };
 
-export const callLeaveTypeList = async (access_token, id = null,userId) => {
+export const callLeaveTypeList = async (access_token, id = null, userId) => {
   const config = {Authorization: 'Bearer ' + access_token};
   // console.log(id);
-  
+
   try {
     if (!id) {
       const response = await axios.get(API_URL + 'user/leave_history_list', {
@@ -341,7 +336,6 @@ export const callLeaveTypeList = async (access_token, id = null,userId) => {
         data: response.data,
       };
     } else {
-
       // console.log(userId + "here")
       const response = await axios.get(
         API_URL + 'user/leave_history_list?id=' + id + '&userId=' + userId,
@@ -349,7 +343,7 @@ export const callLeaveTypeList = async (access_token, id = null,userId) => {
           headers: config,
         },
       );
-      
+
       // console.log(response.data);
       return {
         status: true,
@@ -384,7 +378,7 @@ export const callLeaveHistoryListApi = async (access_token, id = null) => {
           leave_type,
         }) => ({
           id,
-          name:employee.name,
+          name: employee.name,
           statusby_manager,
           from_date,
           to_date,
@@ -425,7 +419,7 @@ export const callLeaveHistoryListApi = async (access_token, id = null) => {
         }) => ({
           id,
           employee_id,
-          name:employee.name,
+          name: employee.name,
           statusby_manager,
           from_date,
           to_date,
@@ -451,48 +445,43 @@ export const callLeaveHistoryListApi = async (access_token, id = null) => {
   }
 };
 
-
-export const callLeaveHistoryAll = async (access_token) => {
+export const callLeaveHistoryAll = async access_token => {
   const config = {Authorization: 'Bearer ' + access_token};
 
   try {
-      const response = await axios.get(API_URL + 'user/leave_request_all', {
-        headers: config,
-      });
+    const response = await axios.get(API_URL + 'user/leave_request_all', {
+      headers: config,
+    });
 
-      
-      const leaveRequestList = response.data.leaveRequestList.map(
-        ({
-          id,
-          employee,
-          statusby_manager,
-          from_date,
-          to_date,
-          total_day,
-          leave,
-          leave_type,
-        }) => ({
-          id,
-          name:employee.name,
-          statusby_manager,
-          from_date,
-          to_date,
-          total_day,
-          leave_name: leave.leave_name,
-          leave_id: leave.id,
-          leave_type_name: leave_type.leave_type_name,
-        }),
-      );
+    const leaveRequestList = response.data.leaveRequestList.map(
+      ({
+        id,
+        employee,
+        statusby_manager,
+        from_date,
+        to_date,
+        total_day,
+        leave,
+        leave_type,
+      }) => ({
+        id,
+        name: employee.name,
+        statusby_manager,
+        from_date,
+        to_date,
+        total_day,
+        leave_name: leave.leave_name,
+        leave_id: leave.id,
+        leave_type_name: leave_type.leave_type_name,
+      }),
+    );
 
-      
-
-      return {
-        status: true,
-        data: leaveRequestList,
-      };
-    
+    return {
+      status: true,
+      data: leaveRequestList,
+    };
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return {
       status: false,
       data: null,
@@ -518,7 +507,6 @@ export const leaveRequestApi = async (data, attachment, access_token) => {
 
     imageInclude = {...data, ...append};
   }
-
 
   // console.log(attachment?.uri ? imageInclude : data);
   // console.log(data)
@@ -629,22 +617,23 @@ export const approveListConfirm = async (access_token, data) => {
   }
 };
 
-
 export const callCheckInOutList = async access_token => {
   const config = {Authorization: 'Bearer ' + access_token};
 
   try {
-    const response = await axios.post(API_URL + 'user/get_user_info',{}, {
-      headers: config,
-    });
+    const response = await axios.post(
+      API_URL + 'user/get_user_info',
+      {},
+      {
+        headers: config,
+      },
+    );
 
     return {
       status: true,
       data: response.data.user.office_shift,
     };
   } catch (error) {
-
-    
     return {
       status: false,
       data: null,
@@ -652,25 +641,27 @@ export const callCheckInOutList = async access_token => {
   }
 };
 
-
 export const keepToken = async accessToken => {
   const config = {Authorization: 'Bearer ' + access_token};
 
   try {
-    const response = await axios.post(API_URL + 'user/token-count',{}, {
-      headers: config,
-    });
+    const response = await axios.post(
+      API_URL + 'user/token-count',
+      {},
+      {
+        headers: config,
+      },
+    );
 
     return {
       status: true,
       data: response.data,
     };
   } catch (error) {
-
-    console.log(error)
+    console.log(error);
     return {
       status: false,
       data: null,
     };
   }
-} 
+};

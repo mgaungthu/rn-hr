@@ -42,14 +42,13 @@ const AtdRequest = ({route, navigation, navigation: {setParams}}) => {
     setData,
   } = useSelectContext();
 
-  const {user_info, access_token} = useSelector(state => state.user);
+  const {access_token} = useSelector(state => state.user);
 
   const navigationState = useNavigationState(state => state);
 
   const activeTabRoute = navigationState.routes[navigationState.index];
 
   const activeTabName = activeTabRoute ? activeTabRoute.name : null;
-  const dispatch = useDispatch();
 
   const scrollViewRef = useRef();
 
@@ -94,35 +93,12 @@ const AtdRequest = ({route, navigation, navigation: {setParams}}) => {
   };
 
   const callAttendanceRequestList = () => {
-    if (user_info.approved_person) {
-
-      callAttendanceRequestAll(access_token)
-        .then(response => {
-          if (response.status) {
-            setAtData(response.data);
-            if (response.data) {
-              dispatch(setAttendanceRequests(response.data));
-              const filteredData = response.data.filter(
-                item => item.statusby_manager === 0,
-              );
-              // console.log(filteredData)
-              setData(prevData => ({
-                ...prevData,
-                atRequest: [...filteredData],
-              }));
-            }
-          }
-        })
-        .catch(() => alert('Internet Connection Error'))
-        .finally(() => setLoading(false));
-    } else {
-      callatdReq(access_token)
-        .then(response => {
-          setAtData(response.data);
-        })
-        .catch(() => alert('Internet Connection Error'))
-        .finally(() => setLoading(false));
-    }
+    callatdReq(access_token)
+      .then(response => {
+        setAtData(response.data);
+      })
+      .catch(() => alert('Internet Connection Error'))
+      .finally(() => setLoading(false));
   };
 
   const handleScroll = event => {
@@ -178,11 +154,7 @@ const AtdRequest = ({route, navigation, navigation: {setParams}}) => {
         renderItem={({item}) => (
           <Item
             key={item.id}
-            setShowAll={setShowAll}
-            showAll={showAll}
             title={item.title}
-            name={item.name}
-            toggleSelection={toggleSelection}
             selectedItems={selectedItems}
             status={item.status}
             date={item.date}
@@ -190,7 +162,6 @@ const AtdRequest = ({route, navigation, navigation: {setParams}}) => {
             navigation={navigation}
             statusbyManager={item.statusby_manager}
             keyExtractor={item => item.id}
-            user_info={user_info}
           />
         )}
         onScroll={handleScroll}
@@ -204,18 +175,13 @@ const AtdRequest = ({route, navigation, navigation: {setParams}}) => {
 };
 
 const Item = ({
-  setShowAll,
-  showAll,
   title,
-  name,
   status,
   date,
   id,
   navigation,
   statusbyManager,
-  selectedItems,
-  toggleSelection,
-  user_info
+  selectedItems
 }) => {
   return (
     <View
@@ -227,19 +193,12 @@ const Item = ({
         },
       ]}>
       <TouchableOpacity
-        onLongPress={() => {
-          setShowAll(true);
-          toggleSelection(id);
-        }}
-        delayLongPress={1000}
         disabled={statusbyManager == 0 || null ? false : true}
         onPress={() => {
-          selectedItems.length === 1 || showAll
-            ? toggleSelection(id)
-            : navigation.navigate('attendanceRequestForm', {
-                id: id,
-                isEdit: true,
-              });
+          navigation.navigate('attendanceRequestForm', {
+            id: id,
+            isEdit: true,
+          });
         }}>
         <View style={styles.rowWrapper}>
           <View style={styles.rowWrapper}>
@@ -254,12 +213,6 @@ const Item = ({
               <Text style={styles.title}>{title}</Text>
               <Text style={styles.dateText}>{date}</Text>
             </View>
-          </View>
-          <View style={styles.rightCenter}>
-            {user_info.approved_person === 1 && (
-              <Text style={[styles.title]}>{name}</Text>
-            )}
-            
           </View>
         </View>
       </TouchableOpacity>
@@ -304,8 +257,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
   },
-  rightCenter:{
-    width:130,
-    textAlign:"center"
-  }
+  rightCenter: {
+    width: 130,
+    textAlign: 'center',
+  },
 });

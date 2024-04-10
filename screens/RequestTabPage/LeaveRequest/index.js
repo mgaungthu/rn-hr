@@ -81,29 +81,12 @@ const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
   };
 
   const callLeaveHistoryList = () => {
-    if (user_info.approved_person === 1) {
-      callLeaveHistoryAll(access_token)
-        .then(response => {
-          setAtData(response.data);
-          dispatch(setLeaveRequests(response.data));
-          const filteredData = response.data.filter(
-            item => item.statusby_manager === 0,
-          );
-          setData(prevData => ({
-            ...prevData,
-            leaveRequest: [...filteredData],
-          }));
-        })
-        .catch(error => console.log(error))
-        .finally(() => setLoading(false));
-    } else {
       callLeaveHistoryListApi(access_token)
         .then(response => {
           setAtData(response.data);
         })
         .catch(error => console.log(error))
         .finally(() => setLoading(false));
-    }
   };
 
   const handleScroll = event => {
@@ -218,21 +201,11 @@ const Item = ({
       },
     ]}>
     <TouchableOpacity
-      onLongPress={() => {
-        setShowAll(true);
-        toggleSelection({id, total_day: totalDay, leave_id});
-      }}
-      delayLongPress={1000}
-      disabled={statusbyManager == 0 || null ? false : true}
-      onPress={() =>
-        selectedItems.length === 1 || showAll
-          ? toggleSelection({id, total_day: totalDay, leave_id})
-          : navigation.navigate('leaveRequestForm', {
-              leave_id: leave_id,
-              id: id,
-              isEdit: true,
-            })
-      }>
+      onPress={() => navigation.navigate('leaveRequestForm', {
+        leave_id: leave_id,
+        id: id,
+        isEdit: true,
+      })}>
       <View style={styles.rowWrapper}>
         <View style={styles.leftBox}>
           <View
@@ -253,9 +226,6 @@ const Item = ({
         </View>
 
         <View style={styles.rightBox}>
-          {user_info.approved_person === 1 &&
-          (<Text style={[styles.title]}>{name}</Text>)}
-
           <Text
             style={[
               styles.title,

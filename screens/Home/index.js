@@ -357,7 +357,7 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
                   activeOpacity={0.9}
                   onPress={() =>
                     approved_person === 1 &&
-                    navigation.navigate('requesttabpage')
+                    navigation.navigate('approvetab')
                   }>
                   {user_info.approved_person === 1 && (
                     <View style={styles.countBox}>

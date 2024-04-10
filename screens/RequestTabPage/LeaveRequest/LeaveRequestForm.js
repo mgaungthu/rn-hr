@@ -310,9 +310,9 @@ const LeaveRequestForm = ({route, navigation, navigation: {setParams}}) => {
           approve={user_info.approved_person}
         />
 
-        {user_info.approved_person === 1 && requestName &&  (
+        {/* {user_info.approved_person === 1 && requestName &&  (
           <Text style={[styles.labelText,{padding:0}]}>Request By {requestName}</Text>
-        )}
+        )} */}
 
         <SelectLeaveName  setLoading={setLoading} setLeaveId={setLeaveId} userId={userId} editParams={editParams}/>
 
