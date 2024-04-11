@@ -3,26 +3,23 @@ import {Linking, Platform, Alert} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {Provider} from 'react-redux';
 import {PersistGate} from 'redux-persist/integration/react';
-import VersionCheck from 'react-native-version-check';
+import {checkVersion} from 'react-native-check-version';
 
 import store, {persistor} from './redux/store';
 import RootNavigation from './navigation/RootNavigation';
 import {SelectContextProvider} from './screens/ApproveTab/SelectContext';
-import { SelectContextProvider as Context } from './screens/RequestTabPage/SelectContext';
+import {SelectContextProvider as Context} from './screens/RequestTabPage/SelectContext';
 import BubbleAnimation from './components/BubbleAnimation';
 
 const App = () => {
   useEffect(() => {
     const checkAppVersion = async () => {
       try {
-        const latestVersion = await VersionCheck.getLatestVersion({
-          packageName: 'com.ananda.attendance', // Replace with your app's package name
-          ignoreErrors: true,
-        });
+        const version = await checkVersion();
 
-        const currentVersion = VersionCheck.getCurrentVersion();
+        console.log('Got version info:', version);
 
-        if (latestVersion > currentVersion) {
+        if (version.needsUpdate) {
           Alert.alert(
             'Update Required',
             'A new version of the app is available. Please update to continue using the app.',
@@ -30,13 +27,7 @@ const App = () => {
               {
                 text: 'Update Now',
                 onPress: () => {
-                  VersionCheck.needUpdate().then(async res => {
-                    // console.log(res.isNeeded);    // true
-                    if (res.isNeeded) {
-                      // console.log(res.storeUrl)
-                      Linking.openURL(res.storeUrl); // open store if update is needed.
-                    }
-                  });
+                  Linking.openURL(res.storeUrl);
                 },
               },
             ],
@@ -59,11 +50,11 @@ const App = () => {
       <PersistGate persistor={persistor} loading={null}>
         <SelectContextProvider>
           <Context>
-          <NavigationContainer>
-            <BubbleAnimation>
-              <RootNavigation />
-            </BubbleAnimation>
-          </NavigationContainer>
+            <NavigationContainer>
+              <BubbleAnimation>
+                <RootNavigation />
+              </BubbleAnimation>
+            </NavigationContainer>
           </Context>
         </SelectContextProvider>
       </PersistGate>
