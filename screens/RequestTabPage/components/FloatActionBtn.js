@@ -20,6 +20,8 @@ const FloatActionBtn = ({navigation, activeTabName}) => {
       SetRouteName(
         activeTabName === 'atd-req'
           ? 'attendanceRequestForm'
+          : activeTabName === 'otrequest'
+          ? 'OverTimeForm'
           : 'leaveRequestForm',
       );
       zoomAnim.setValue(0.1);

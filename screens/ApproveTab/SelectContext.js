@@ -1,5 +1,5 @@
 // YourContext.js
-import React, {createContext, useContext, useState} from 'react';
+import React, {createContext, useContext, useEffect, useState} from 'react';
 
 const SelectContext = createContext();
 
@@ -8,6 +8,7 @@ export const SelectContextProvider = ({children}) => {
   const [data, setData] = useState({
     atRequest: [],
     leaveRequest: [],
+    overTimeRequest: [],
   });
   const [activeTab, setActiveTab] = useState();
   const [showAll, setShowAll] = useState(false);
@@ -15,8 +16,8 @@ export const SelectContextProvider = ({children}) => {
   const toggleSelection = itemId => {
     // console.log()
     // console.log(itemId)
-    if (activeTab === 'atd-approve') {
-      if (selectedItems.includes(itemId)) { 
+    if (activeTab === 'atd-approve' || activeTab === 'otapprove') {
+      if (selectedItems.includes(itemId)) {
         let result = selectedItems.filter(id => id !== itemId);
         if (result.length === 0) {
           setShowAll(false);
@@ -26,15 +27,15 @@ export const SelectContextProvider = ({children}) => {
         setSelectedItems([...selectedItems, itemId]);
       }
     } else {
-      if (selectedItems.some(item => Object.values(item).includes(itemId.id))) { 
-        let result = selectedItems.filter(value => value.id !== itemId.id)
+      if (selectedItems.some(item => Object.values(item).includes(itemId.id))) {
+        let result = selectedItems.filter(value => value.id !== itemId.id);
         if (result.length === 0) {
           setShowAll(false);
         }
         setSelectedItems(selectedItems.filter(value => value.id !== itemId.id));
       } else {
         // console.log(data?.leaveRequest)
-        
+
         setSelectedItems([...selectedItems, itemId]);
       }
     }
@@ -44,6 +45,8 @@ export const SelectContextProvider = ({children}) => {
     let activeData = [];
     if (activeTab === 'atd-approve') {
       activeData = data.atRequest;
+    } else if (activeTab === 'otapprove') {
+      activeData = data.overTimeRequest;
     } else {
       activeData = data.leaveRequest;
     }
@@ -56,6 +59,7 @@ export const SelectContextProvider = ({children}) => {
       const itemsToSelect = activeData.filter(
         item => item.statusby_manager !== 1,
       );
+
       if (activeTab === 'leaveapprove') {
         const res = itemsToSelect.map(item => {
           const data = {

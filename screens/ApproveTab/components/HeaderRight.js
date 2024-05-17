@@ -9,7 +9,11 @@ import {
 } from 'react-native';
 import {horizontalScale, verticalScale} from '../../../assets/styles/scaling';
 import {useSelectContext} from '../SelectContext';
-import {approveAttendanceRequest, approveListConfirm} from '../../../api';
+import {
+  ApproveOverTime,
+  approveAttendanceRequest,
+  approveListConfirm,
+} from '../../../api';
 import {useSelector} from 'react-redux';
 
 const HeaderRight = ({navigation}) => {
@@ -27,7 +31,7 @@ const HeaderRight = ({navigation}) => {
 
   [loading, setLoading] = useState(false);
 
-  const {access_token,user_info} = useSelector(state => state.user);
+  const {access_token, user_info} = useSelector(state => state.user);
 
   useEffect(() => {
     //  console.log(activeTab)
@@ -35,9 +39,8 @@ const HeaderRight = ({navigation}) => {
     setShowAll(false);
   }, [activeTab]);
 
-  
   if (!user_info.approved_person) {
-    return (null)
+    return null;
   }
 
   return (
@@ -70,6 +73,19 @@ const HeaderRight = ({navigation}) => {
                             .then(response => {
                               if (response.status) {
                                 navigation.navigate('atd-approve', {
+                                  showModal: true,
+                                  message: `Approve ${selectedItems.length} items Successfully`,
+                                });
+                                setSelectedItems([]);
+                                setShowAll(false);
+                              }
+                            })
+                            .finally(() => setLoading(false));
+                        } else if (activeTab === 'otapprove') {
+                          ApproveOverTime(selectedItems, access_token)
+                            .then(response => {
+                              if (response.status) {
+                                navigation.navigate('otapprove', {
                                   showModal: true,
                                   message: `Approve ${selectedItems.length} items Successfully`,
                                 });
@@ -132,7 +148,7 @@ const styles = StyleSheet.create({
     gap: horizontalScale(10),
   },
   text: {
-    color:"#ddd",
+    color: '#ddd',
     padding: verticalScale(2),
   },
 });

@@ -1,12 +1,15 @@
 import axios from 'axios';
 import {readFile} from 'react-native-fs';
+import {data} from '../assets/utils';
 
-// const API_URL = 'http://10.10.18.18/hrms/public/api/';
-const API_URL = 'https://soloversion.com/api/';
+// const API_URL = 'https://soloversion.com/api/';
+const API_URL = 'http://10.0.2.2:8000/api/';
+// const API_URL = 'https://soloversion.com/api/';
 
 export const LoginUser = async data => {
   try {
     userinfo = await axios.post(API_URL + 'login', data);
+
     return {
       status: true,
       data: {
@@ -14,6 +17,7 @@ export const LoginUser = async data => {
       },
     };
   } catch (error) {
+    console.log(error);
     return {status: false, message: error.response.data.message};
   }
 };
@@ -662,6 +666,138 @@ export const keepToken = async accessToken => {
     return {
       status: false,
       data: null,
+    };
+  }
+};
+
+export const getMyOverTime = async accessToken => {
+  const config = {Authorization: 'Bearer ' + accessToken};
+
+  try {
+    const response = await axios.get(API_URL + 'user/overtime-me', {
+      headers: config,
+    });
+
+    return {
+      status: true,
+      data: response.data.data,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: false,
+      data: null,
+    };
+  }
+};
+
+export const getAllOverTime = async accessToken => {
+  const config = {Authorization: 'Bearer ' + accessToken};
+
+  try {
+    const response = await axios.get(API_URL + 'user/overtime-requests', {
+      headers: config,
+    });
+    return {
+      status: true,
+      data: response.data.data,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: false,
+      data: null,
+    };
+  }
+};
+
+export const OverTimeAction = async (data, access_token) => {
+  const config = {Authorization: 'Bearer ' + access_token};
+
+  try {
+    if (data.id) {
+      response = await axios.patch(API_URL + 'user/overtime-requests', data, {
+        headers: config,
+      });
+    } else {
+      response = await axios.post(API_URL + 'user/overtime-requests', data, {
+        headers: config,
+      });
+    }
+
+    return {
+      status: true,
+      message: response.data.message,
+    };
+  } catch (error) {
+    console.log(error.response.data);
+    return {
+      status: false,
+      message: error.response.data.message,
+    };
+  }
+};
+
+export const getOverTime = async (access_token, id) => {
+  const config = {Authorization: 'Bearer ' + access_token};
+  try {
+    response = await axios.get(`${API_URL}user/overtime-requests/${id}`, {
+      headers: config,
+    });
+    return {
+      status: true,
+      data: response.data.data,
+      message: response.data.message,
+    };
+  } catch (error) {
+    console.log(error.response.data);
+    return {
+      status: false,
+      message: error.response.data.message,
+    };
+  }
+};
+
+export const DeleteOverTime = async (access_token, id) => {
+  const config = {Authorization: 'Bearer ' + access_token};
+  try {
+    response = await axios.delete(`${API_URL}user/overtime-requests/${id}`, {
+      headers: config,
+    });
+    return {
+      status: true,
+      data: response.data,
+      message: response.data.message,
+    };
+  } catch (error) {
+    console.log(error.response.data);
+    return {
+      status: false,
+      message: error.response.data.message,
+    };
+  }
+};
+
+export const ApproveOverTime = async (id, access_token) => {
+  const config = {Authorization: 'Bearer ' + access_token};
+  try {
+    response = await axios.patch(
+      `${API_URL}user/overtime-approve/${id}`,
+      {},
+      {
+        headers: config,
+      },
+    );
+    return {
+      status: true,
+      data: response.data,
+      message: response.data.message,
+    };
+  } catch (error) {
+    console.log(error.response.data);
+    return {
+      status: false,
+      message: error.response.data.message,
     };
   }
 };

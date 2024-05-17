@@ -57,13 +57,12 @@ const LeaveApprove = ({route, navigation, navigation: {setParams}, state}) => {
     if (route.params?.showModal) {
       setLoading(false);
       setMessage(route.params?.message);
-      setParams({showModal: false});
       toggleModal();
+      setParams({showModal: false});
     }
 
     return () => {
-      callLeaveHistoryList();
-      toggleModal();
+      setParams({showModal: false});
     };
   }, [route.params?.showModal]);
 
@@ -81,20 +80,20 @@ const LeaveApprove = ({route, navigation, navigation: {setParams}, state}) => {
   };
 
   const callLeaveHistoryList = () => {
-      callLeaveHistoryAll(access_token)
-        .then(response => {
-          setAtData(response.data);
-          dispatch(setLeaveRequests(response.data));
-          const filteredData = response.data.filter(
-            item => item.statusby_manager === 0,
-          );
-          setData(prevData => ({
-            ...prevData,
-            leaveRequest: [...filteredData],
-          }));
-        })
-        .catch(error => console.log(error))
-        .finally(() => setLoading(false));
+    callLeaveHistoryAll(access_token)
+      .then(response => {
+        setAtData(response.data);
+        dispatch(setLeaveRequests(response.data));
+        const filteredData = response.data.filter(
+          item => item.statusby_manager === 0,
+        );
+        setData(prevData => ({
+          ...prevData,
+          leaveRequest: [...filteredData],
+        }));
+      })
+      .catch(error => console.log(error))
+      .finally(() => setLoading(false));
   };
 
   const handleScroll = event => {
@@ -129,13 +128,16 @@ const LeaveApprove = ({route, navigation, navigation: {setParams}, state}) => {
   if (!atData || atData.length === 0) {
     return (
       <>
+        <CustomModal
+          title={message}
+          isVisible={isModalVisible}
+          jsonPath={require('../../../assets/animations/success-checkmark.json')}
+        />
         <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
           <Text style={{fontSize: scaleFontSize(16), color: '#000'}}>
-          Here`s no  Leave request.
+            Here`s no Leave request.
           </Text>
-          <Text style={{fontSize: 16, color: '#000'}}>
-          Please reload!
-          </Text>
+          <Text style={{fontSize: 16, color: '#000'}}>Please reload!</Text>
         </View>
       </>
     );
@@ -195,7 +197,7 @@ const Item = ({
   leave_id,
   navigation,
   statusbyManager,
-  user_info
+  user_info,
 }) => (
   <View
     style={[
@@ -218,7 +220,7 @@ const Item = ({
       onPress={() =>
         selectedItems.length === 1 || showAll
           ? toggleSelection({id, total_day: totalDay, leave_id})
-          : navigation.navigate('leaveRequestForm', {
+          : navigation.navigate('LeaveApproveForm', {
               leave_id: leave_id,
               id: id,
               isEdit: true,
@@ -244,8 +246,9 @@ const Item = ({
         </View>
 
         <View style={styles.rightBox}>
-          {user_info.approved_person === 1 &&
-          (<Text style={[styles.title]}>{name}</Text>)}
+          {user_info.approved_person === 1 && (
+            <Text style={[styles.title]}>{name}</Text>
+          )}
 
           <Text
             style={[

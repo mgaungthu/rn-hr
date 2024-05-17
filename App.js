@@ -17,7 +17,7 @@ const App = () => {
       try {
         const version = await checkVersion();
 
-        console.log('Got version info:', version);
+        // console.log('Got version info:', version);
 
         if (version.needsUpdate) {
           Alert.alert(

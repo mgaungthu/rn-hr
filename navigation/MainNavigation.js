@@ -5,8 +5,8 @@ import Home from '../screens/Home';
 import CheckInOut from '../screens/CheckInOut';
 import Login from '../screens/Login';
 import RequestTabPage from '../screens/RequestTabPage';
-import ApproveTab from '../screens/ApproveTab'
-import AttandanceApprove from '../screens/ApproveTab/AttandanceApprove'
+import ApproveTab from '../screens/ApproveTab';
+import AttandanceApprove from '../screens/ApproveTab/AttandanceApprove';
 import LeaveApprove from '../screens/ApproveTab/LeaveApprove';
 import OtApprove from '../screens/ApproveTab/OtApprove';
 
@@ -18,6 +18,10 @@ import LeaveRequestForm from '../screens/RequestTabPage/LeaveRequest/LeaveReques
 import AttendanceList from '../screens/AttendanceList';
 import Settings from '../screens/Settings';
 import {useSelector} from 'react-redux';
+import OverTimeForm from '../screens/RequestTabPage/OtRequest/OverTimeForm';
+import OverTimeApproveForm from '../screens/ApproveTab/OtApprove/OverTimeApproveForm';
+import AttendanceApproveForm from '../screens/ApproveTab/AttandanceApprove/AttendanceApproveForm';
+import LeaveApproveForm from '../screens/ApproveTab/LeaveApprove/LeaveApproveForm';
 
 const RequestTab = createMaterialTopTabNavigator();
 
@@ -53,6 +57,10 @@ const CustomTabBar = ({state, descriptors, navigation}) => {
   );
   const unapprovedLeaveCount = useSelector(
     state => state.leave.unapprovedCount,
+  );
+
+  const unapprovedOvertimeCount = useSelector(
+    state => state.overtime.unapprovedCount,
   );
   const {user_info} = useSelector(state => state.user);
 
@@ -119,6 +127,15 @@ const CustomTabBar = ({state, descriptors, navigation}) => {
                     ({unapprovedLeaveCount})
                   </Text>
                 )}
+
+              {route.name === 'otapprove' &&
+                unapprovedOvertimeCount > 0 &&
+                user_info.approved_person === 1 && (
+                  <Text style={styles.countText}>
+                    {' '}
+                    ({unapprovedOvertimeCount})
+                  </Text>
+                )}
             </Text>
           </TouchableOpacity>
         );
@@ -127,10 +144,7 @@ const CustomTabBar = ({state, descriptors, navigation}) => {
   );
 };
 
-
 const CustomRequestTabBar = ({state, descriptors, navigation}) => {
-
-
   return (
     <View style={styles.tabBarContainer}>
       {state.routes.map((route, index) => {
@@ -178,7 +192,6 @@ const CustomRequestTabBar = ({state, descriptors, navigation}) => {
             ]}>
             <Text style={[styles.tabText, isFocused && styles.activeTabText]}>
               {label}
-            
             </Text>
           </TouchableOpacity>
         );
@@ -218,7 +231,6 @@ export const RequestTabNavigation = () => {
     </RequestTab.Navigator>
   );
 };
-
 
 export const ApproveTabNavigation = () => {
   return (
@@ -322,12 +334,12 @@ export const Authenticated = () => {
         })}
       />
 
-  <Stack.Screen
+      <Stack.Screen
         name={'approvetab'}
         component={ApproveTab}
         options={({navigation, route}) => ({
           headerShown: true,
-          title: 'Request',
+          title: 'Approval',
           headerStyle: {
             backgroundColor: '#206aed',
           },
@@ -341,6 +353,18 @@ export const Authenticated = () => {
           component={AttendanceRequestForm}
         />
         <Stack.Screen name="leaveRequestForm" component={LeaveRequestForm} />
+        <Stack.Screen name="OverTimeForm" component={OverTimeForm} />
+        <Stack.Screen
+          name="OverTimeApproveForm"
+          component={OverTimeApproveForm}
+        />
+
+        <Stack.Screen
+          name="AttendanceApproveForm"
+          component={AttendanceApproveForm}
+        />
+
+        <Stack.Screen name="LeaveApproveForm" component={LeaveApproveForm} />
       </Stack.Group>
     </Stack.Navigator>
   );

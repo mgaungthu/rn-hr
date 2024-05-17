@@ -38,13 +38,12 @@ const Login = ({navigation}) => {
     return () => {
       clearTimeout(timeout);
     };
-  }, [error])
+  }, [error]);
 
   useEffect(() => {
     loadRememberMe();
-      loadCredentials();
-  }, [])
-  
+    loadCredentials();
+  }, []);
 
   const input2Ref = useRef(null);
 
@@ -160,16 +159,19 @@ const Login = ({navigation}) => {
                         // console.log("here")
                       }
                     } catch (error) {
-                      console.log(error);
-                      setLoading(false);
-                      alert('Internet Connection Error');
+                      // console.log(error);
+                      // setLoading(false);
+                      // alert('Internet Connection Error');
                     }
                   }}
                 />
               </View>
             </View>
 
-            <RememberMe handleRememberMeChange={handleRememberMeChange} rememberMe={rememberMe} />
+            <RememberMe
+              handleRememberMeChange={handleRememberMeChange}
+              rememberMe={rememberMe}
+            />
           </View>
         </ImageBackground>
       </ScrollView>

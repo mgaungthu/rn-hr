@@ -30,10 +30,16 @@ import {
   resetcheckInOutStatus,
 } from '../../redux/reducers/CheckInOutStatus';
 import {getFormattedDate} from '../../assets/utils';
-import {resetApprove, setAttendanceRequests} from '../../redux/reducers/attendanceList';
-import {resetLeaveApprove, setLeaveRequests} from '../../redux/reducers/leaveList';
+import {
+  resetApprove,
+  setAttendanceRequests,
+} from '../../redux/reducers/attendanceList';
+import {
+  resetLeaveApprove,
+  setLeaveRequests,
+} from '../../redux/reducers/leaveList';
 import LoadingScreen from '../../components/LoadingScreen';
-import { resetUser } from '../../redux/reducers/User';
+import {resetUser} from '../../redux/reducers/User';
 
 const Home = ({route, navigation, navigation: {setParams}}) => {
   const [isModalVisible, setModalVisible] = useState(false);
@@ -51,6 +57,10 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
     state => state.leave.unapprovedCount,
   );
 
+  const unapprovedOverTimeCount = useSelector(
+    state => state.overtime.unapprovedCount,
+  );
+
   // const access_token = user.access_token;
 
   const onRefresh = React.useCallback(() => {
@@ -59,8 +69,8 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
       setRefreshing(false);
     }, 2000);
     return () => {
-      timeout.clearTimeout()
-    }
+      timeout.clearTimeout();
+    };
   }, []);
 
   useFocusEffect(
@@ -74,7 +84,6 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
   );
 
   const getFormattedDateMemoized = useMemo(() => getFormattedDate(), []);
-  
 
   useEffect(() => {
     // toggleModal();
@@ -111,9 +120,9 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
     }
   }, [route.params?.showModal, refreshing]);
 
-  const callCheckInOutInfo =  () => {
-    InfoApi(access_token).then(
-      response => {
+  const callCheckInOutInfo = () => {
+    InfoApi(access_token)
+      .then(response => {
         if (response.status && response.data) {
           const {check_in_time, check_out_time} = response.data;
           dispatch(
@@ -141,7 +150,7 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
                     dispatch(resetApprove());
                     dispatch(resetLeaveApprove());
                     dispatch(resetcheckInOutStatus());
-                    navigation.navigate('login'); 
+                    navigation.navigate('login');
                   },
                 },
               ],
@@ -152,12 +161,12 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
             // alert("Network conntection error")
           }
         }
-      }
-    ).catch(error => {
-      // console.log(error)
-      alert("Network conntection error")
-      setLoading(false);
-    });
+      })
+      .catch(error => {
+        // console.log(error)
+        alert('Network conntection error');
+        setLoading(false);
+      });
   };
 
   const getCheckInOutList = () => {
@@ -342,7 +351,12 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
                   )}
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.box} activeOpacity={0.9}>
+                <TouchableOpacity
+                  style={styles.box}
+                  activeOpacity={0.9}
+                  onPress={() =>
+                    navigation.navigate('requesttabpage', {screen: 'otrequest'})
+                  }>
                   <Image
                     source={require('../../assets/images/ic_calendar_timeline.png')}
                     style={styles.boxImg}
@@ -356,13 +370,14 @@ const Home = ({route, navigation, navigation: {setParams}}) => {
                   style={styles.box}
                   activeOpacity={0.9}
                   onPress={() =>
-                    approved_person === 1 &&
-                    navigation.navigate('approvetab')
+                    approved_person === 1 && navigation.navigate('approvetab')
                   }>
                   {user_info.approved_person === 1 && (
                     <View style={styles.countBox}>
                       <Text style={styles.countText}>
-                        {unapprovedRequestsCount + unapprovedLeaveCount}
+                        {unapprovedRequestsCount +
+                          unapprovedLeaveCount +
+                          unapprovedOverTimeCount}
                       </Text>
                     </View>
                   )}

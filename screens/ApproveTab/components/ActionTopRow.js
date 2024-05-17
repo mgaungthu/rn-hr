@@ -1,42 +1,42 @@
-import React from 'react'
-import { View, Text , Pressable, TouchableOpacity, StyleSheet} from 'react-native'
+import React from 'react';
+import {
+  View,
+  Text,
+  Pressable,
+  TouchableOpacity,
+  StyleSheet,
+} from 'react-native';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import {faXmark, faPaperPlane} from '@fortawesome/free-solid-svg-icons';
 import {
-    horizontalScale,
-    verticalScale,
-    scaleFontSize
-  } from '../../../assets/styles/scaling';
+  horizontalScale,
+  verticalScale,
+  scaleFontSize,
+} from '../../../assets/styles/scaling';
 
-const ActionTopRow = ({handleFormSubmit,navigation,title,approve}) => {
+const ActionTopRow = ({navigation, title, approve}) => {
   return (
     <View style={styles.topRow}>
-
-          <View style={styles.titleBox}>
-            <Pressable onPress={() => navigation.goBack()}>
-              <FontAwesomeIcon
-                icon={faXmark}
-                size={23}
-                style={styles.icon}
-              />
-            </Pressable>
-            <Text style={styles.title}>{title}</Text>
-          </View>
-          <View>
-               <TouchableOpacity onPress={handleFormSubmit}>
+      <View style={styles.titleBox}>
+        <Pressable onPress={() => navigation.goBack()}>
+          <FontAwesomeIcon icon={faXmark} size={23} style={styles.icon} />
+        </Pressable>
+        <Text style={styles.title}>{title}</Text>
+      </View>
+      <View>
+        {/* <TouchableOpacity onPress={handleFormSubmit}>
                <FontAwesomeIcon
                  icon={faPaperPlane}
                  size={25}
                  style={[styles.icon]}
                />
-             </TouchableOpacity>
-          </View>
-        </View>
-  )
-}
+             </TouchableOpacity> */}
+      </View>
+    </View>
+  );
+};
 
-export default ActionTopRow
-
+export default ActionTopRow;
 
 const styles = StyleSheet.create({
   topRow: {

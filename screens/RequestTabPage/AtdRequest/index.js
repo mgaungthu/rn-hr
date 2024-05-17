@@ -62,7 +62,6 @@ const AtdRequest = ({route, navigation, navigation: {setParams}}) => {
     setLoading(true);
     callAttendanceRequestList();
     if (route.params?.showModal) {
-      // setShowAll(false)
       setLoading(false);
       setSelectedItems([]);
       setVisibleData([]);
@@ -72,7 +71,7 @@ const AtdRequest = ({route, navigation, navigation: {setParams}}) => {
     }
 
     return () => {
-      toggleModal();
+      setParams({showModal: false});
     };
   }, [route.params?.showModal]);
 
@@ -181,7 +180,7 @@ const Item = ({
   id,
   navigation,
   statusbyManager,
-  selectedItems
+  selectedItems,
 }) => {
   return (
     <View

@@ -8,6 +8,7 @@ export const SelectContextProvider = ({children}) => {
   const [data, setData] = useState({
     atRequest: [],
     leaveRequest: [],
+    overTime: [],
   });
   const [activeTab, setActiveTab] = useState();
   const [showAll, setShowAll] = useState(false);
@@ -16,7 +17,7 @@ export const SelectContextProvider = ({children}) => {
     // console.log()
     // console.log(itemId)
     if (activeTab === 'atd-req') {
-      if (selectedItems.includes(itemId)) { 
+      if (selectedItems.includes(itemId)) {
         let result = selectedItems.filter(id => id !== itemId);
         if (result.length === 0) {
           setShowAll(false);
@@ -26,15 +27,15 @@ export const SelectContextProvider = ({children}) => {
         setSelectedItems([...selectedItems, itemId]);
       }
     } else {
-      if (selectedItems.some(item => Object.values(item).includes(itemId.id))) { 
-        let result = selectedItems.filter(value => value.id !== itemId.id)
+      if (selectedItems.some(item => Object.values(item).includes(itemId.id))) {
+        let result = selectedItems.filter(value => value.id !== itemId.id);
         if (result.length === 0) {
           setShowAll(false);
         }
         setSelectedItems(selectedItems.filter(value => value.id !== itemId.id));
       } else {
         // console.log(data?.leaveRequest)
-        
+
         setSelectedItems([...selectedItems, itemId]);
       }
     }

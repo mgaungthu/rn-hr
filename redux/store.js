@@ -9,12 +9,14 @@ import User from './reducers/User';
 import CheckInOutStatus from './reducers/CheckInOutStatus';
 import attendanceList from './reducers/attendanceList';
 import leaveList from './reducers/leaveList';
+import overTimeList from './reducers/overTimeList';
 
 const rootReducer = combineReducers({
   user: User,
   checkinout: CheckInOutStatus,
   attendance: attendanceList,
-  leave:leaveList
+  leave: leaveList,
+  overtime: overTimeList,
 });
 
 const configuration = {

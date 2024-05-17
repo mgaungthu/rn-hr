@@ -68,12 +68,11 @@ const AttandanceApprove = ({route, navigation, navigation: {setParams}}) => {
       setSelectedItems([]);
       setVisibleData([]);
       setMessage(route.params?.message);
-      setParams({showModal: false});
       toggleModal();
     }
 
     return () => {
-      toggleModal();
+      setParams({showModal: false});
     };
   }, [route.params?.showModal]);
 
@@ -94,26 +93,25 @@ const AttandanceApprove = ({route, navigation, navigation: {setParams}}) => {
   };
 
   const callAttendanceRequestList = () => {
+    callAttendanceRequestAll(access_token)
+      .then(response => {
+        if (response.status) {
+          setAtData(response.data);
+          if (response.data) {
+            dispatch(setAttendanceRequests(response.data));
+            const filteredData = response.data.filter(
+              item => item.statusby_manager === 0,
+            );
 
-      callAttendanceRequestAll(access_token)
-        .then(response => {
-          if (response.status) {
-            setAtData(response.data);
-            if (response.data) {
-              dispatch(setAttendanceRequests(response.data));
-              const filteredData = response.data.filter(
-                item => item.statusby_manager === 0,
-              );
-              // console.log(filteredData)
-              setData(prevData => ({
-                ...prevData,
-                atRequest: [...filteredData],
-              }));
-            }
+            setData(prevData => ({
+              ...prevData,
+              atRequest: [...filteredData],
+            }));
           }
-        })
-        .catch(() => alert('Internet Connection Error'))
-        .finally(() => setLoading(false));
+        }
+      })
+      .catch(() => alert('Internet Connection Error'))
+      .finally(() => setLoading(false));
   };
 
   const handleScroll = event => {
@@ -141,19 +139,19 @@ const AttandanceApprove = ({route, navigation, navigation: {setParams}}) => {
     return <LoadingScreen />;
   }
 
-  // console.log(visibleData)
-
   if (visibleData.length === 0) {
     return (
       <>
+        <CustomModal
+          title={message}
+          isVisible={isModalVisible}
+          jsonPath={require('../../../assets/animations/success-checkmark.json')}
+        />
         <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
           <Text style={{fontSize: 16, color: '#000'}}>
             Here`s no Attendance request.
           </Text>
-          <Text style={{fontSize: 16, color: '#000'}}>
-          Please reload!
-          </Text>
-          
+          <Text style={{fontSize: 16, color: '#000'}}>Please reload!</Text>
         </View>
       </>
     );
@@ -191,7 +189,6 @@ const AttandanceApprove = ({route, navigation, navigation: {setParams}}) => {
         scrollEventThrottle={16}
       />
       {loading && <LoadingScreen />}
-
     </SafeAreaView>
   );
 };
@@ -208,7 +205,7 @@ const Item = ({
   statusbyManager,
   selectedItems,
   toggleSelection,
-  user_info
+  user_info,
 }) => {
   return (
     <View
@@ -229,7 +226,7 @@ const Item = ({
         onPress={() => {
           selectedItems.length === 1 || showAll
             ? toggleSelection(id)
-            : navigation.navigate('attendanceRequestForm', {
+            : navigation.navigate('AttendanceApproveForm', {
                 id: id,
                 isEdit: true,
               });
@@ -252,7 +249,6 @@ const Item = ({
             {user_info.approved_person === 1 && (
               <Text style={[styles.title]}>{name}</Text>
             )}
-            
           </View>
         </View>
       </TouchableOpacity>
@@ -297,8 +293,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
   },
-  rightCenter:{
-    width:130,
-    textAlign:"center"
-  }
+  rightCenter: {
+    width: 130,
+    textAlign: 'center',
+  },
 });

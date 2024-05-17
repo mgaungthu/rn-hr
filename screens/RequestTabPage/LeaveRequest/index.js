@@ -62,8 +62,7 @@ const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
     }
 
     return () => {
-      callLeaveHistoryList();
-      toggleModal();
+      setParams({showModal: false});
     };
   }, [route.params?.showModal]);
 
@@ -81,12 +80,12 @@ const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
   };
 
   const callLeaveHistoryList = () => {
-      callLeaveHistoryListApi(access_token)
-        .then(response => {
-          setAtData(response.data);
-        })
-        .catch(error => console.log(error))
-        .finally(() => setLoading(false));
+    callLeaveHistoryListApi(access_token)
+      .then(response => {
+        setAtData(response.data);
+      })
+      .catch(error => console.log(error))
+      .finally(() => setLoading(false));
   };
 
   const handleScroll = event => {
@@ -121,6 +120,11 @@ const LeaveRequest = ({route, navigation, navigation: {setParams}, state}) => {
   if (!atData || atData.length === 0) {
     return (
       <>
+        <CustomModal
+          title={message}
+          isVisible={isModalVisible}
+          jsonPath={require('../../../assets/animations/success-checkmark.json')}
+        />
         <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
           <Text style={{fontSize: scaleFontSize(16), color: '#000'}}>
             You have no Leave request
@@ -187,7 +191,7 @@ const Item = ({
   leave_id,
   navigation,
   statusbyManager,
-  user_info
+  user_info,
 }) => (
   <View
     style={[
@@ -201,11 +205,14 @@ const Item = ({
       },
     ]}>
     <TouchableOpacity
-      onPress={() => navigation.navigate('leaveRequestForm', {
-        leave_id: leave_id,
-        id: id,
-        isEdit: true,
-      })}>
+      disabled={statusbyManager == 0 || null ? false : true}
+      onPress={() =>
+        navigation.navigate('leaveRequestForm', {
+          leave_id: leave_id,
+          id: id,
+          isEdit: true,
+        })
+      }>
       <View style={styles.rowWrapper}>
         <View style={styles.leftBox}>
           <View

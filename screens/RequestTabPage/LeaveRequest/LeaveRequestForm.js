@@ -1,10 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {
-  View,
-  ScrollView,
-  Alert,
-  Text
-} from 'react-native';
+import {View, ScrollView, Alert, Text} from 'react-native';
 
 import {
   DeleteLeaveRequest,
@@ -26,20 +21,18 @@ import DateRangePicker from './components/DateRangePicker';
 import SelectLeaveName from './components/SelectLeaveName';
 import Attachment from './components/Attachment';
 
-
 const LeaveRequestForm = ({route, navigation, navigation: {setParams}}) => {
-
-  const [leaveRequestId,setLeaveRequestId] = useState();
+  const [leaveRequestId, setLeaveRequestId] = useState();
   const [startDate, setStartDate] = useState(new Date(Date.now()));
   const [endDate, setEndDate] = useState(new Date(Date.now()));
   const [totalDays, setTotalDays] = useState(1);
-  const [leaveId,setLeaveId] = useState();
-  const [userId,setUserId]=useState(null)
-  const [requestName,setRequestName] = useState()
+  const [leaveId, setLeaveId] = useState();
+  const [userId, setUserId] = useState(null);
+  const [requestName, setRequestName] = useState();
   const [checkedItem, setCheckedItem] = useState(1);
-  const [reason, setReason] = useState('')
+  const [reason, setReason] = useState('');
   const [selectedOfficeShift, setSelectedOfficeShift] = useState(null);
-  const [attachment,setAttachment] = useState(null);
+  const [attachment, setAttachment] = useState(null);
 
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
@@ -49,30 +42,25 @@ const LeaveRequestForm = ({route, navigation, navigation: {setParams}}) => {
   const [editParams, setEditParams] = useState({
     isEdit: false,
     editId: null,
-    leave_id:null
+    leave_id: null,
   });
 
   const {access_token, user_info} = useSelector(state => state.user);
-  
 
   useEffect(() => {
-
-    
     closeModal();
     if (route.params?.isEdit) {
-  
       const id = route.params?.id;
-      const leave_id = route.params?.leave_id
+      const leave_id = route.params?.leave_id;
       setLoading(true);
       callLeaveHistoryListCall(id);
       // console.log(leave_id);
       setEditParams({
         isEdit: true,
         editId: id,
-        leave_id:leave_id
+        leave_id: leave_id,
       });
-      setParams({isEdit:false})
-
+      setParams({isEdit: false});
     }
 
     // console.log();
@@ -83,29 +71,38 @@ const LeaveRequestForm = ({route, navigation, navigation: {setParams}}) => {
   }, [isModalVisible]);
 
   const callLeaveHistoryListCall = id => {
-      callLeaveHistoryListApi(access_token,id).then(
-        (response) => {
-          const {name,employee_id,id,from_date,to_date,leave_name_id,leave_type_id,shift_name,total_day,reason,attach_file} = response.data;
-          const from_dateConverted = convertDateFormat(from_date);
-          const end_dateConverted = convertDateFormat(to_date);
-          setStartDate(new Date(from_dateConverted));
-          setEndDate(new Date(end_dateConverted));
-          setLeaveId(leave_name_id)
-          setUserId(employee_id)
-          setSelectedOfficeShift(shift_name);
-          setCheckedItem(leave_type_id)
-          setReason(reason)
-          setTotalDays(total_day)
-          setAttachment(attach_file)
-          setLeaveRequestId(id);
-          setRequestName(name)
-        }
-      )
-      .catch(
-        ()=> alert("Internet Connection Error")
-      )
+    callLeaveHistoryListApi(access_token, id)
+      .then(response => {
+        const {
+          name,
+          employee_id,
+          id,
+          from_date,
+          to_date,
+          leave_name_id,
+          leave_type_id,
+          shift_name,
+          total_day,
+          reason,
+          attach_file,
+        } = response.data;
+        const from_dateConverted = convertDateFormat(from_date);
+        const end_dateConverted = convertDateFormat(to_date);
+        setStartDate(new Date(from_dateConverted));
+        setEndDate(new Date(end_dateConverted));
+        setLeaveId(leave_name_id);
+        setUserId(employee_id);
+        setSelectedOfficeShift(shift_name);
+        setCheckedItem(leave_type_id);
+        setReason(reason);
+        setTotalDays(total_day);
+        setAttachment(attach_file);
+        setLeaveRequestId(id);
+        setRequestName(name);
+      })
+      .catch(() => alert('Internet Connection Error'));
 
-      // convertDateFormat()
+    // convertDateFormat()
   };
 
   const closeModal = () => {
@@ -146,7 +143,6 @@ const LeaveRequestForm = ({route, navigation, navigation: {setParams}}) => {
     // Ensure the minimum difference is 1 day
     return Math.max(1, differenceInDays + 1);
   }
-
 
   const handleFormSubmit = () => {
     const formatStartDate = startDate.toLocaleDateString('en-US', {
@@ -211,9 +207,8 @@ const LeaveRequestForm = ({route, navigation, navigation: {setParams}}) => {
     // console.log(attachment)
   };
 
-  const showConfirmDialog = (action) => {
-
-    if(action === 'approve') {
+  const showConfirmDialog = action => {
+    if (action === 'approve') {
       return Alert.alert(
         'Are your sure?',
         'Are you sure you want to approve?',
@@ -223,16 +218,14 @@ const LeaveRequestForm = ({route, navigation, navigation: {setParams}}) => {
             text: 'Yes',
             onPress: () => {
               setLoading(true);
-              approveConfirm(access_token,leaveRequestId,totalDays,leaveId).then(
-                (response) => {
+              approveConfirm(access_token, leaveRequestId, totalDays, leaveId)
+                .then(response => {
                   navigation.navigate('leaverequest', {
                     showModal: true,
                     message: response.message,
                   });
-                }
-              ).finally(
-                () =>  setLoading(false)
-              )
+                })
+                .finally(() => setLoading(false));
             },
           },
           // The "No" button
@@ -253,16 +246,14 @@ const LeaveRequestForm = ({route, navigation, navigation: {setParams}}) => {
           onPress: () => {
             setLoading(true);
             // console.log(leaveRequestId)
-            DeleteLeaveRequest(access_token,leaveRequestId).then(
-              (response) => {
+            DeleteLeaveRequest(access_token, leaveRequestId)
+              .then(response => {
                 navigation.navigate('leaverequest', {
                   showModal: true,
                   message: 'Leave request already removed',
                 });
-              }
-            ).finally(
-              () => setLoading(false)
-            )
+              })
+              .finally(() => setLoading(false));
           },
         },
         // The "No" button
@@ -314,7 +305,12 @@ const LeaveRequestForm = ({route, navigation, navigation: {setParams}}) => {
           <Text style={[styles.labelText,{padding:0}]}>Request By {requestName}</Text>
         )} */}
 
-        <SelectLeaveName  setLoading={setLoading} setLeaveId={setLeaveId} userId={userId} editParams={editParams}/>
+        <SelectLeaveName
+          setLoading={setLoading}
+          setLeaveId={setLeaveId}
+          userId={userId}
+          editParams={editParams}
+        />
 
         <DateRangePicker
           handleStartDateChange={handleStartDateChange}
@@ -332,7 +328,11 @@ const LeaveRequestForm = ({route, navigation, navigation: {setParams}}) => {
           selectedOfficeShift={selectedOfficeShift}
           setSelectedOfficeShift={setSelectedOfficeShift}
           data={data}
-          labelText={selectedOfficeShift ? selectedOfficeShift : 'Choose your Office Shift'}
+          labelText={
+            selectedOfficeShift
+              ? selectedOfficeShift
+              : 'Choose your Office Shift'
+          }
         />
 
         <TypeCheckBox
@@ -344,7 +344,7 @@ const LeaveRequestForm = ({route, navigation, navigation: {setParams}}) => {
 
         <InputText setReason={setReason} reason={reason} />
 
-        <Attachment setAttachment={setAttachment} attachment={attachment}/>
+        <Attachment setAttachment={setAttachment} attachment={attachment} />
 
         <ActionButton
           user_info={user_info}
@@ -359,6 +359,3 @@ const LeaveRequestForm = ({route, navigation, navigation: {setParams}}) => {
 };
 
 export default LeaveRequestForm;
-
-
-
